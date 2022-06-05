@@ -4,6 +4,7 @@ import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { useEffect, useState } from 'react'
 import Map, {
+  AttributionControl,
   GeolocateControl,
   Layer,
   NavigationControl,
@@ -82,10 +83,12 @@ function App() {
         style={{ width: '100%', height: '100%' }}
         mapStyle='mapbox://styles/danfishgold/cl2821j55000714m1b7zb25yd'
         mapboxAccessToken={env.VITE_MAPBOX_TOKEN}
+        attributionControl={false}
       >
         <ScaleControl />
         <NavigationControl />
         <GeolocateControl />
+        <AttributionControl customAttribution={[]} />
         {features && (
           <Source type='geojson' data={features}>
             <Layer
