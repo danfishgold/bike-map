@@ -14,13 +14,14 @@ import Map, {
 } from 'react-map-gl'
 import { env } from './env'
 import osmData from './osm-data.json'
-import { groupBy } from './utils'
 
-async function osmFeatures() {
-  return osmtogeojson(osmData)
+function getOsmFeatures(): FeatureCollection<Geometry> {
+  return osmtogeojson(osmData) as FeatureCollection<Geometry>
 }
 
-async function drorFeatures() {
+async function getDrorFeatures(): Promise<
+  FeatureCollection<Geometry, DrorProperties>
+> {
   const response = await fetch(env.VITE_KML_SOURCE)
   const xmlString = await response.text()
   const xml = new DOMParser().parseFromString(xmlString, 'text/xml')
@@ -30,7 +31,16 @@ async function drorFeatures() {
     throw new Error('GeoJSON has null geometry')
   }
 
-  return geoJson as FeatureCollection<Geometry>
+  return geoJson as FeatureCollection<Geometry, DrorProperties>
+}
+
+function extractLineStrings<Properties>(
+  featureCollection: FeatureCollection<Geometry, Properties>,
+): FeatureCollection<LineString, Properties> {
+  const features = featureCollection.features.filter(
+    (feature) => feature.geometry.type === 'LineString',
+  ) as Feature<LineString, Properties>[]
+  return { type: 'FeatureCollection', features }
 }
 
 mapboxgl.setRTLTextPlugin(
@@ -39,7 +49,7 @@ mapboxgl.setRTLTextPlugin(
   true,
 )
 
-type LineStringProperties = {
+type DrorProperties = {
   name: string
   description: string
   stroke: string
@@ -48,32 +58,15 @@ type LineStringProperties = {
 }
 
 function App() {
-  const [features, setFeatures] = useState<FeatureCollection<
-    LineString,
-    LineStringProperties
-  > | null>(null)
+  const [drorFeatures, setDrorFeatures] =
+    useState<FeatureCollection<LineString> | null>(null)
+  const [osmFeatures] = useState(getOsmFeatures())
 
   useEffect(() => {
-    osmFeatures()
-      .then((geojson) => {
-        const featureGroups = groupBy(
-          geojson.features,
-          (feature) => feature.geometry.type,
-        )
-        const featureCollection: FeatureCollection<
-          LineString,
-          LineStringProperties
-        > = {
-          type: 'FeatureCollection',
-          features: (featureGroups.get('LineString') ?? []) as Feature<
-            LineString,
-            LineStringProperties
-          >[],
-        }
-        return featureCollection
-      })
+    getDrorFeatures()
+      .then((featureCollection) => extractLineStrings(featureCollection))
       .then((lines) => {
-        setFeatures(lines)
+        setDrorFeatures(lines)
         console.log(lines)
       })
       .catch((err) => console.error(err))
@@ -96,8 +89,8 @@ function App() {
         <NavigationControl />
         <GeolocateControl />
         <AttributionControl customAttribution={[]} />
-        {features && (
-          <Source type='geojson' data={features}>
+        {drorFeatures && (
+          <Source type='geojson' data={drorFeatures}>
             <Layer
               type='line'
               id='all-dror-lines'
@@ -112,6 +105,19 @@ function App() {
             />
           </Source>
         )}
+        <Source type='geojson' data={osmFeatures}>
+          <Layer
+            type='line'
+            id='all-osm-lines'
+            paint={{
+              'line-color': 'black',
+              'line-width': 5,
+            }}
+            layout={{
+              'line-cap': 'round',
+            }}
+          />
+        </Source>
       </Map>
     </div>
   )
