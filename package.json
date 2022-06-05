@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "prebuild": "tsc --project tsconfig.build-osm.json && node src/build-osm.js > src/osm-data.json && rm src/build-osm.js",
+    "prebuild": "tsc --project tsconfig.buildOsm.json && node src/buildOsm.js > src/osmData.json && rm src/buildOsm.js",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },

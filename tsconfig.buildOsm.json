@@ -5,5 +5,5 @@
     "lib": ["ES2021"],
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src/build-osm.ts"]
+  "include": ["src/buildOsm.ts"]
 }

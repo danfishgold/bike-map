@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 
-src/osm-data.json
+src/osmData.json

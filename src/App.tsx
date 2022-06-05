@@ -13,7 +13,7 @@ import Map, {
   Source,
 } from 'react-map-gl'
 import { env } from './env'
-import osmData from './osm-data.json'
+import osmData from './osmData.json'
 
 function getOsmFeatures(): FeatureCollection<Geometry> {
   return osmtogeojson(osmData) as FeatureCollection<Geometry>
