@@ -2,6 +2,7 @@ import * as tj from '@tmcw/togeojson'
 import { Feature, FeatureCollection, Geometry, LineString } from 'geojson'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
+import osmtogeojson from 'osmtogeojson'
 import { useEffect, useState } from 'react'
 import Map, {
   AttributionControl,
@@ -12,7 +13,25 @@ import Map, {
   Source,
 } from 'react-map-gl'
 import { env } from './env'
+import osmData from './osm-data.json'
 import { groupBy } from './utils'
+
+async function osmFeatures() {
+  return osmtogeojson(osmData)
+}
+
+async function drorFeatures() {
+  const response = await fetch(env.VITE_KML_SOURCE)
+  const xmlString = await response.text()
+  const xml = new DOMParser().parseFromString(xmlString, 'text/xml')
+  const geoJson = tj.kml(xml)
+
+  if (geoJson.features.some((feature) => feature.geometry === null)) {
+    throw new Error('GeoJSON has null geometry')
+  }
+
+  return geoJson as FeatureCollection<Geometry>
+}
 
 mapboxgl.setRTLTextPlugin(
   'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js',
@@ -35,19 +54,7 @@ function App() {
   > | null>(null)
 
   useEffect(() => {
-    fetch(env.VITE_KML_SOURCE)
-      .then((response) => response.text())
-      .then((xmlString) =>
-        new DOMParser().parseFromString(xmlString, 'text/xml'),
-      )
-      .then((xml) => tj.kml(xml))
-      .then((geojson) => {
-        if (geojson.features.some((feature) => feature.geometry === null)) {
-          throw new Error('GeoJSON has null geometry')
-        }
-
-        return geojson as FeatureCollection<Geometry>
-      })
+    osmFeatures()
       .then((geojson) => {
         const featureGroups = groupBy(
           geojson.features,

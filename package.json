@@ -14,6 +14,7 @@
     "envsafe": "^2.0.3",
     "mapbox-gl": "^2.8.2",
     "node-fetch": "^3.2.5",
+    "osmtogeojson": "^3.0.0-beta.4",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-map-gl": "^7.0.15"
