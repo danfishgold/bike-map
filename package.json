@@ -8,6 +8,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tmcw/togeojson": "^5.1.3",
+    "@types/geojson": "^7946.0.8",
     "envsafe": "^2.0.3",
     "mapbox-gl": "^2.8.2",
     "react": "^18.0.0",
