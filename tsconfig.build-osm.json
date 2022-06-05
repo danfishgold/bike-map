@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "node",
+    "lib": ["ES2021"],
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["src/build-osm.ts"]
+}
