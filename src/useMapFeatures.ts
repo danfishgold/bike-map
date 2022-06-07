@@ -1,24 +1,25 @@
 import { FeatureCollection, Geometry } from 'geojson'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { useEffect, useState } from 'react'
-import { fetchMyMapsFeatures } from './myMapsMapData'
+import {
+  FeatureGroup as MyMapsFeatureGroup,
+  fetchMyMapsFeatures,
+} from './myMapsMapData'
 import { fetchOsmFeatures } from './osmMapData'
 
 export function useMapFeatures() {
-  const [myMapsFeatures, setMyMapsFeatures] =
-    useState<FeatureCollection<Geometry> | null>(null)
+  const [myMapsFeatures, setMyMapsFeatures] = useState<Map<
+    MyMapsFeatureGroup,
+    FeatureCollection<Geometry>
+  > | null>(null)
   const [osmFeatures, setOsmFeatures] =
     useState<FeatureCollection<Geometry> | null>(null)
 
   useEffect(() => {
     fetchMyMapsFeatures()
       .then((featureGroups) => {
-        const lines = featureGroups.get('bikePath')
-        if (!lines) {
-          return
-        }
-        setMyMapsFeatures(lines)
-        console.log(lines)
+        setMyMapsFeatures(featureGroups)
+        console.log(featureGroups)
       })
       .catch((err) => console.error(err))
   }, [])

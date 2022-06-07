@@ -1,3 +1,5 @@
+import { FeatureCollection, Geometry } from 'geojson'
+
 export function groupBy<K, T>(
   list: T[],
   keyGetter: (key: T) => K,
@@ -13,4 +15,23 @@ export function groupBy<K, T>(
     }
   })
   return map
+}
+
+export const emptyFeatureGroup: FeatureCollection<Geometry> = {
+  type: 'FeatureCollection',
+  features: [],
+}
+
+export function toggleSetMember<T>(
+  set: Set<T>,
+  member: T,
+  include: boolean,
+): Set<T> {
+  const newSet = new Set(set)
+  if (include) {
+    newSet.add(member)
+  } else {
+    newSet.delete(member)
+  }
+  return newSet
 }
