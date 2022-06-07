@@ -25,6 +25,7 @@ function App() {
       'recommendedRoadArrow',
       'dangerousRoad',
       'hill',
+      'point',
     ]),
   )
   const [hoverInfo, setHoverInfo] = useState<{
@@ -33,7 +34,7 @@ function App() {
     y: number
   } | null>(null)
 
-  const onHover = useCallback((event: mapboxgl.MapLayerMouseEvent) => {
+  const onClick = useCallback((event: mapboxgl.MapLayerMouseEvent) => {
     const {
       features,
       point: { x, y },
@@ -57,9 +58,12 @@ function App() {
         attributionControl={false}
         interactiveLayerIds={featureGroups
           .filter((group) => visibleMyMapsFeatures.has(group))
-          .map((group) => `my-maps-${group}`)}
-        onMouseMove={onHover}
-        onMouseLeave={() => setHoverInfo(null)}
+          .map((group) => `my-maps-target-${group}`)}
+        onClick={onClick}
+        onMouseEnter={(event) =>
+          (event.target.getCanvas().style.cursor = 'pointer')
+        }
+        onMouseLeave={(event) => (event.target.getCanvas().style.cursor = '')}
       >
         <ScaleControl />
         <NavigationControl />
@@ -200,26 +204,38 @@ function MyMapsLayer({
   switch (featureGroupLayerType(group)) {
     case 'line': {
       return (
-        <Layer
-          type='line'
-          id={`my-maps-${group}`}
-          source={source}
-          paint={{
-            'line-color': ['get', 'stroke'],
-            'line-width': ['get', 'stroke-width'],
-            'line-opacity': ['get', 'stroke-opacity'],
-          }}
-          layout={{
-            'line-cap': 'round',
-          }}
-        />
+        <>
+          <Layer
+            type='line'
+            id={`my-maps-${group}`}
+            source={source}
+            paint={{
+              'line-color': ['get', 'stroke'],
+              'line-width': ['get', 'stroke-width'],
+              'line-opacity': ['get', 'stroke-opacity'],
+            }}
+            layout={{
+              'line-cap': 'round',
+            }}
+          />
+          <Layer
+            type='line'
+            id={`my-maps-target-${group}`}
+            source={source}
+            paint={{
+              'line-width': 20,
+              'line-color': '#ffffff',
+              'line-opacity': 0.00001,
+            }}
+          />
+        </>
       )
     }
     case 'point': {
       return (
         <Layer
           type='circle'
-          id={`my-maps-${group}`}
+          id={`my-maps-target-${group}`}
           source={source}
           paint={{ 'circle-color': ['get', 'icon-color'] }}
         />
@@ -229,7 +245,7 @@ function MyMapsLayer({
       return (
         <Layer
           type='fill'
-          id={`my-maps-${group}`}
+          id={`my-maps-target-${group}`}
           source={source}
           paint={{
             'fill-color': ['get', 'fill'],
