@@ -95,11 +95,16 @@ function App() {
             />
           </Source>
         )}
-        {hoverInfo && <HoverInfo feature={hoverInfo.feature} />}
         <MyMapsFeatureToggles
           visibleFeatures={visibleMyMapsFeatures}
           setVisibleFeatures={setVisibleMyMapsFeatures}
         />
+        {hoverInfo && (
+          <HoverInfo
+            feature={hoverInfo.feature}
+            onHide={() => setHoverInfo(null)}
+          />
+        )}
       </Map>
     </div>
   )
@@ -107,52 +112,56 @@ function App() {
 
 export default App
 
-function HoverInfo({ feature }: { feature: mapboxgl.MapboxGeoJSONFeature }) {
-  if (!feature.properties) {
-    return null
-  }
-
-  const {
-    name,
-    description,
-    stroke,
-    styleUrl,
-    'stroke-opacity': strokeOpacity,
-    'stroke-width': strokeWidth,
-    תיאור: hebrewDescription,
-    סוג: hebrewType,
-    status,
-    type,
-    fill,
-    'fill-opacity': fillOpacity,
-    icon,
-    ...rest
-  } = feature.properties
-  const otherKeys = Object.keys(rest)
+function HoverInfo({
+  feature,
+  onHide,
+}: {
+  feature: mapboxgl.MapboxGeoJSONFeature
+  onHide: () => void
+}) {
+  const properties = feature.properties ?? {}
+  const keysToShow = [
+    'name',
+    'description',
+    'stroke',
+    'styleUrl',
+    'stroke-opacity',
+    'stroke-width',
+    'תיאור',
+    'סוג',
+    'status',
+    'type',
+    'fill',
+    'fill-opacity',
+    'icon',
+  ]
+  const otherKeys = Object.keys(properties).filter(
+    (key) => !keysToShow.includes(key),
+  )
   return (
     <div
       style={{
         position: 'fixed',
         top: '10px',
         right: '50px',
+        left: '10px',
         padding: '5px',
         background: 'white',
         direction: 'rtl',
       }}
     >
       <ul>
-        {name && <li>name: {name}</li>}
-        {description && <li>description: {description}</li>}
-        {hebrewDescription && <li>תיאור: {hebrewDescription}</li>}
-        {stroke && <li>stroke: {stroke}</li>}
-        {fill && <li>fill: {fill}</li>}
-        {icon && <li>icon: {icon}</li>}
-        {fillOpacity && <li>fill-opacity: {fillOpacity}</li>}
-        {type && <li>type: {type}</li>}
-        {hebrewType && <li>סוג: {hebrewType}</li>}
-        {status && <li>status: {status}</li>}
+        {keysToShow.map(
+          (key) =>
+            properties[key] && (
+              <li key={key}>
+                {key}: {properties[key]}
+              </li>
+            ),
+        )}
         {otherKeys.length > 0 && <li>{otherKeys.join(', ')}</li>}
       </ul>
+      <button onClick={onHide}>hide</button>
     </div>
   )
 }
