@@ -25,3 +25,6 @@ dist-ssr
 
 
 src/osmData.json
+
+# Local Netlify folder
+.netlify
