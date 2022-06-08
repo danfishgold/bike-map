@@ -1,9 +1,11 @@
+import { Feature, LineString } from 'geojson'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { ReactElement, useCallback, useState } from 'react'
+import { ReactElement, useCallback, useEffect, useState } from 'react'
 import Map, {
   AttributionControl,
   GeolocateControl,
   Layer,
+  Marker,
   NavigationControl,
   ScaleControl,
   Source,
@@ -16,6 +18,8 @@ import {
 } from './myMapsMapData'
 import { useMapFeatures } from './useMapFeatures'
 import { emptyFeatureGroup, toggleSetMember } from './utils'
+
+type Point = { latitude: number; longitude: number }
 
 function App() {
   const { myMapsFeatures, osmFeatures } = useMapFeatures()
@@ -44,15 +48,26 @@ function App() {
     setHoverInfo(hoveredFeature ? { feature: hoveredFeature, x, y } : null)
   }, [])
 
+  const [viewState, setViewState] = useState({
+    longitude: 34.7804731,
+    latitude: 32.0805045,
+    zoom: 12,
+  })
+
+  const route = useRoute(viewState)
+
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
+    <div
+      style={{
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <Map
-        initialViewState={{
-          longitude: 34.7804731,
-          latitude: 32.0805045,
-          zoom: 12,
-        }}
-        style={{ width: '100%', height: '100%' }}
+        {...viewState}
+        onMove={(event) => setViewState(event.viewState)}
+        style={{ width: '100%', flexGrow: 1 }}
         mapStyle='mapbox://styles/danfishgold/cl2821j55000714m1b7zb25yd'
         mapboxAccessToken={env.VITE_MAPBOX_TOKEN}
         attributionControl={false}
@@ -95,6 +110,31 @@ function App() {
             />
           </Source>
         )}
+        {route.path && (
+          <>
+            <Marker
+              latitude={route.path.origin.latitude}
+              longitude={route.path.origin.longitude}
+            ></Marker>
+            <Source type='geojson' data={route.path.feature}>
+              <Layer
+                type='line'
+                id='route'
+                paint={{
+                  'line-color': 'black',
+                  'line-width': 3,
+                }}
+              />
+            </Source>
+          </>
+        )}
+        <Marker
+          latitude={viewState.latitude}
+          longitude={viewState.longitude}
+          anchor='center'
+        >
+          x
+        </Marker>
         <LayerToggles
           visibleLayers={visibleLayers}
           setVisibleLayers={setVisibleLayers}
@@ -106,6 +146,26 @@ function App() {
           />
         )}
       </Map>
+      <button
+        style={{
+          padding: '10px 20px',
+          margin: 0,
+          outline: 0,
+          border: 0,
+          background: 'azure',
+          fontSize: '1.5rem',
+          fontWeight: 700,
+        }}
+        onClick={() => {
+          if (route.path) {
+            route.clearPath()
+          } else {
+            route.setOrigin(viewState)
+          }
+        }}
+      >
+        {route.path ? 'הסרת מסלול' : 'חישוב מסלול'}
+      </button>
     </div>
   )
 }
@@ -277,4 +337,59 @@ function MyMapsLayer({
       )
     }
   }
+}
+
+function useRoute(center: Point) {
+  const [throttledCenter, setThrottledCenter] = useState(center)
+  const [origin, setOrigin] = useState<Point | null>(null)
+  const [path, setPath] = useState<{
+    origin: Point
+    destination: Point
+    feature: Feature<LineString>
+  } | null>(null)
+
+  useEffect(() => {
+    if (distanceSortOf(throttledCenter, center) > 0.001) {
+      setThrottledCenter(center)
+    }
+  }, [center])
+
+  useEffect(() => {
+    if (!origin) {
+      return
+    }
+    if (
+      distanceSortOf(origin, throttledCenter) < 0.001 ||
+      (path?.destination &&
+        distanceSortOf(throttledCenter, path.destination) < 0.001)
+    ) {
+      return
+    }
+
+    console.log('calculating')
+    fetch(
+      `https://api.mapbox.com/directions/v5/mapbox/cycling/${origin.longitude},${origin.latitude};${throttledCenter.longitude},${throttledCenter.latitude}?geometries=geojson&access_token=${env.VITE_MAPBOX_TOKEN}`,
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data)
+        const feature = { type: 'Feature', ...data.routes[0] }
+        setPath({
+          origin,
+          destination: throttledCenter,
+          feature,
+        })
+      })
+  }, [throttledCenter, origin])
+
+  const clearPath = () => {
+    setPath(null)
+    setOrigin(null)
+  }
+
+  return { origin, setOrigin, path, clearPath }
+}
+
+function distanceSortOf(p1: Point, p2: Point) {
+  return Math.hypot(p1.latitude - p2.latitude, p1.longitude - p2.longitude)
 }
