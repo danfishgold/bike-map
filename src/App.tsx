@@ -17,7 +17,11 @@ import {
   featureGroups,
 } from './myMapsMapData'
 import { useMapFeatures } from './useMapFeatures'
-import { emptyFeatureGroup, toggleSetMember } from './utils'
+import {
+  emptyFeatureGroup,
+  toggleSetMember,
+  useThrottledFunction,
+} from './utils'
 
 type Point = { latitude: number; longitude: number }
 
@@ -343,45 +347,29 @@ function MyMapsLayer({
 }
 
 function useRoute(center: Point) {
-  const [throttledCenter, setThrottledCenter] = useState(center)
   const [path, setPath] = useState<{
     origin: Point
     destination: Point | null
     feature: Feature<LineString> | null
   } | null>(null)
 
-  useEffect(() => {
-    if (distanceSortOf(throttledCenter, center) > 0.001) {
-      setThrottledCenter(center)
-    }
-  }, [center])
+  const throttledFetchRoute = useThrottledFunction(
+    (origin: Point, destination: Point) => {
+      console.log('calculating')
+      fetchRoute(origin, destination).then((feature) =>
+        setPath({ origin, destination, feature }),
+      )
+    },
+    250,
+  )
 
   useEffect(() => {
-    if (!path) {
-      return
-    }
-    if (
-      distanceSortOf(path.origin, throttledCenter) < 0.001 ||
-      (path?.destination &&
-        distanceSortOf(throttledCenter, path.destination) < 0.001)
-    ) {
+    if (!path || distanceSortOf(path.origin, center) < 0.001) {
       return
     }
 
-    console.log('calculating')
-    fetch(
-      `https://api.mapbox.com/directions/v5/mapbox/cycling/${path.origin.longitude},${path.origin.latitude};${throttledCenter.longitude},${throttledCenter.latitude}?geometries=geojson&access_token=${env.VITE_MAPBOX_TOKEN}`,
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        const feature = { type: 'Feature', ...data.routes[0] }
-        setPath({
-          origin: path.origin,
-          destination: throttledCenter,
-          feature,
-        })
-      })
-  }, [throttledCenter, path?.origin])
+    throttledFetchRoute(path.origin, center)
+  }, [center, path?.origin])
 
   const setOrigin = (origin: Point) => {
     setPath({ origin, destination: null, feature: null })
@@ -396,4 +384,14 @@ function useRoute(center: Point) {
 
 function distanceSortOf(p1: Point, p2: Point) {
   return Math.hypot(p1.latitude - p2.latitude, p1.longitude - p2.longitude)
+}
+
+async function fetchRoute(origin: Point, destination: Point) {
+  const response = await fetch(
+    `https://api.mapbox.com/directions/v5/mapbox/cycling/${origin.longitude},${origin.latitude};${destination.longitude},${destination.latitude}?geometries=geojson&access_token=${env.VITE_MAPBOX_TOKEN}`,
+  )
+  const data = await response.json()
+
+  const feature = { type: 'Feature', ...data.routes[0] }
+  return feature
 }
