@@ -155,6 +155,7 @@ function App() {
           outline: 0,
           border: 0,
           background: 'azure',
+          color: 'navy',
           fontSize: '1.5rem',
           fontWeight: 700,
         }}
