@@ -116,16 +116,18 @@ function App() {
               latitude={route.path.origin.latitude}
               longitude={route.path.origin.longitude}
             ></Marker>
-            <Source type='geojson' data={route.path.feature}>
-              <Layer
-                type='line'
-                id='route'
-                paint={{
-                  'line-color': 'black',
-                  'line-width': 3,
-                }}
-              />
-            </Source>
+            {route.path.feature && (
+              <Source type='geojson' data={route.path.feature}>
+                <Layer
+                  type='line'
+                  id='route'
+                  paint={{
+                    'line-color': 'black',
+                    'line-width': 3,
+                  }}
+                />
+              </Source>
+            )}
           </>
         )}
         <Marker
@@ -341,11 +343,10 @@ function MyMapsLayer({
 
 function useRoute(center: Point) {
   const [throttledCenter, setThrottledCenter] = useState(center)
-  const [origin, setOrigin] = useState<Point | null>(null)
   const [path, setPath] = useState<{
     origin: Point
-    destination: Point
-    feature: Feature<LineString>
+    destination: Point | null
+    feature: Feature<LineString> | null
   } | null>(null)
 
   useEffect(() => {
@@ -355,11 +356,11 @@ function useRoute(center: Point) {
   }, [center])
 
   useEffect(() => {
-    if (!origin) {
+    if (!path) {
       return
     }
     if (
-      distanceSortOf(origin, throttledCenter) < 0.001 ||
+      distanceSortOf(path.origin, throttledCenter) < 0.001 ||
       (path?.destination &&
         distanceSortOf(throttledCenter, path.destination) < 0.001)
     ) {
@@ -368,26 +369,29 @@ function useRoute(center: Point) {
 
     console.log('calculating')
     fetch(
-      `https://api.mapbox.com/directions/v5/mapbox/cycling/${origin.longitude},${origin.latitude};${throttledCenter.longitude},${throttledCenter.latitude}?geometries=geojson&access_token=${env.VITE_MAPBOX_TOKEN}`,
+      `https://api.mapbox.com/directions/v5/mapbox/cycling/${path.origin.longitude},${path.origin.latitude};${throttledCenter.longitude},${throttledCenter.latitude}?geometries=geojson&access_token=${env.VITE_MAPBOX_TOKEN}`,
     )
       .then((response) => response.json())
       .then((data) => {
         console.log(data)
         const feature = { type: 'Feature', ...data.routes[0] }
         setPath({
-          origin,
+          origin: path.origin,
           destination: throttledCenter,
           feature,
         })
       })
-  }, [throttledCenter, origin])
+  }, [throttledCenter, path?.origin])
+
+  const setOrigin = (origin: Point) => {
+    setPath({ origin, destination: null, feature: null })
+  }
 
   const clearPath = () => {
     setPath(null)
-    setOrigin(null)
   }
 
-  return { origin, setOrigin, path, clearPath }
+  return { setOrigin, path, clearPath }
 }
 
 function distanceSortOf(p1: Point, p2: Point) {
