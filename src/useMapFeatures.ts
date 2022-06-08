@@ -28,7 +28,6 @@ export function useMapFeatures() {
     fetchOsmFeatures()
       .then((featureCollection) => {
         setOsmFeatures(featureCollection)
-        console.log(featureCollection)
       })
       .catch((err) => console.error(err))
   }, [])

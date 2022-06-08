@@ -373,7 +373,6 @@ function useRoute(center: Point) {
     )
       .then((response) => response.json())
       .then((data) => {
-        console.log(data)
         const feature = { type: 'Feature', ...data.routes[0] }
         setPath({
           origin: path.origin,
