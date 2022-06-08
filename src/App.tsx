@@ -19,13 +19,13 @@ import { emptyFeatureGroup, toggleSetMember } from './utils'
 
 function App() {
   const { myMapsFeatures, osmFeatures } = useMapFeatures()
-  const [visibleMyMapsFeatures, setVisibleMyMapsFeatures] = useState(
-    new Set<FeatureGroup>([
+  const [visibleLayers, setVisibleLayers] = useState(
+    new Set<FeatureGroup | 'osmBikePaths'>([
+      'osmBikePaths',
       'recommendedRoad',
       'recommendedRoadArrow',
       'dangerousRoad',
       'hill',
-      'point',
     ]),
   )
   const [hoverInfo, setHoverInfo] = useState<{
@@ -57,7 +57,7 @@ function App() {
         mapboxAccessToken={env.VITE_MAPBOX_TOKEN}
         attributionControl={false}
         interactiveLayerIds={featureGroups
-          .filter((group) => visibleMyMapsFeatures.has(group))
+          .filter((group) => visibleLayers.has(group))
           .map((group) => `my-maps-target-${group}`)}
         onClick={onClick}
         onMouseEnter={(event) =>
@@ -70,7 +70,7 @@ function App() {
         <GeolocateControl />
         <AttributionControl customAttribution={[]} />
         {featureGroups
-          .filter((group) => visibleMyMapsFeatures.has(group))
+          .filter((group) => visibleLayers.has(group))
           .map((group) => (
             <Source
               key={group}
@@ -80,7 +80,7 @@ function App() {
               <MyMapsLayer group={group} />
             </Source>
           ))}
-        {osmFeatures && (
+        {osmFeatures && visibleLayers.has('osmBikePaths') && (
           <Source type='geojson' data={osmFeatures}>
             <Layer
               type='line'
@@ -95,9 +95,9 @@ function App() {
             />
           </Source>
         )}
-        <MyMapsFeatureToggles
-          visibleFeatures={visibleMyMapsFeatures}
-          setVisibleFeatures={setVisibleMyMapsFeatures}
+        <LayerToggles
+          visibleLayers={visibleLayers}
+          setVisibleLayers={setVisibleLayers}
         />
         {hoverInfo && (
           <HoverInfo
@@ -166,39 +166,52 @@ function HoverInfo({
   )
 }
 
-function MyMapsFeatureToggles({
-  visibleFeatures,
-  setVisibleFeatures,
+function LayerToggles({
+  visibleLayers: visibleFeatures,
+  setVisibleLayers: setVisibleFeatures,
 }: {
-  visibleFeatures: Set<FeatureGroup>
-  setVisibleFeatures: (visibleFeatures: Set<FeatureGroup>) => void
+  visibleLayers: Set<FeatureGroup | 'osmBikePaths'>
+  setVisibleLayers: (
+    visibleFeatures: Set<FeatureGroup | 'osmBikePaths'>,
+  ) => void
 }) {
+  const [isOpen, setIsOpen] = useState(false)
   return (
     <div
       style={{
         position: 'fixed',
-        bottom: '80px',
+        top: '10px',
         left: '10px',
         padding: '5px',
         background: 'white',
-        direction: 'rtl',
       }}
     >
-      {featureGroups.map((group) => (
-        <div key={group}>
-          <input
-            id={`my-maps-feature-toggle-${group}`}
-            type='checkbox'
-            checked={visibleFeatures.has(group)}
-            onChange={(event) =>
-              setVisibleFeatures(
-                toggleSetMember(visibleFeatures, group, event.target.checked),
-              )
-            }
-          />
-          <label htmlFor={`my-maps-feature-toggle-${group}`}>{group}</label>
-        </div>
-      ))}
+      {isOpen ? (
+        <>
+          <button onClick={() => setIsOpen(false)}>close</button>
+          {['osmBikePaths' as const, ...featureGroups].map((group) => (
+            <div key={group}>
+              <input
+                id={`layer-toggle-${group}`}
+                type='checkbox'
+                checked={visibleFeatures.has(group)}
+                onChange={(event) =>
+                  setVisibleFeatures(
+                    toggleSetMember(
+                      visibleFeatures,
+                      group,
+                      event.target.checked,
+                    ),
+                  )
+                }
+              />
+              <label htmlFor={`layer-toggle-${group}`}>{group}</label>
+            </div>
+          ))}
+        </>
+      ) : (
+        <button onClick={() => setIsOpen(true)}>שכבות</button>
+      )}
     </div>
   )
 }
