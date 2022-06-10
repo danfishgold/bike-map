@@ -31,7 +31,8 @@ function App() {
     new Set<FeatureGroup | 'osmBikePaths'>([
       'osmBikePaths',
       'recommendedRoad',
-      'recommendedRoadArrow',
+      'alsoRecommendedRoadMaybe?',
+      'roadArrow',
       'dangerousRoad',
       'hill',
     ]),

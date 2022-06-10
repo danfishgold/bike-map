@@ -18,7 +18,8 @@ type MyMapsProperties = {
 const lineGroups = [
   'bikePath',
   'recommendedRoad',
-  'recommendedRoadArrow',
+  'alsoRecommendedRoadMaybe?',
+  'roadArrow',
   'dangerousRoad',
   'ofney dan',
   'planned',
@@ -105,7 +106,15 @@ function parseLineGroup(
   } else if (stroke === '#0ba9cc') {
     return 'recommendedRoad'
   } else if (stroke === '#4186f0') {
-    return 'recommendedRoadArrow'
+    if (
+      feature.geometry.type === 'LineString' &&
+      feature.geometry.coordinates.length === 3 &&
+      /^קו \d+$/.test(name)
+    ) {
+      return 'roadArrow'
+    } else {
+      return 'alsoRecommendedRoadMaybe?'
+    }
   } else if (stroke === '#c6a4cf') {
     return 'ofney dan'
   } else if (stroke === '#fad199' || status?.trim() === 'תכנון') {
