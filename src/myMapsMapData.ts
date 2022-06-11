@@ -31,6 +31,7 @@ const lineGroups = [
   'unknown',
   'mistake',
 ] as const
+
 const polygonGroups = [
   'unknownPolygon',
   'trainStationIsochrone',
@@ -60,7 +61,13 @@ export async function fetchMyMapsFeatures(): Promise<
   return new Map(
     Array.from(groupFeatures.entries()).map(([group, features]) => [
       group,
-      { type: 'FeatureCollection', features },
+      {
+        type: 'FeatureCollection',
+        features: features.map((feature) => ({
+          ...feature,
+          properties: { ...feature.properties, featureGroup: group },
+        })),
+      },
     ]),
   )
 }
@@ -177,5 +184,50 @@ export function featureGroupLayerType(
     return 'polygon'
   } else {
     return 'line'
+  }
+}
+
+export function featureGroupDisplayName(layer: FeatureGroup): string {
+  switch (layer) {
+    case 'bikePath':
+      return 'שביל'
+    case 'recommendedRoad':
+      return 'מסלול חלופי'
+    case 'alsoRecommendedRoadMaybe?':
+      return 'מסלול חלופי'
+    case 'roadArrow':
+      return 'חיצי סטריות'
+    case 'dangerousRoad':
+      return 'כביש מסוכן'
+    case 'ofney dan':
+      return 'אופנידן'
+    case 'planned':
+      return 'שביל מתוכנן'
+    case 'inProgress':
+      return 'שביל בביצוע'
+    case 'missing':
+      return 'שביל חסר'
+    case 'dirtRoad':
+      return 'שביל עפר'
+    case 'bridge':
+      return 'גשר'
+    case 'road???':
+      return '???'
+    case 'unknown':
+      return '???'
+    case 'mistake':
+      return 'טעות'
+    case 'unknownPolygon':
+      return 'שטח כלשהו'
+    case 'trainStationIsochrone':
+      return 'איזוכרון תחנת רכבת'
+    case 'coveredArea':
+      return 'שטח מכוסה'
+    case 'hill':
+      return 'גבעה'
+    case 'calmedTrafficArea':
+      return 'איזור מיתון תנועה'
+    case 'point':
+      return 'נקודות'
   }
 }

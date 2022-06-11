@@ -14,12 +14,15 @@ import ButtonBar from './ButtonBar'
 import { env } from './env'
 import {
   FeatureGroup,
+  featureGroupDisplayName,
   featureGroupLayerType,
   featureGroups,
 } from './myMapsMapData'
 import { useMapFeatures } from './useMapFeatures'
 import {
   emptyFeatureGroup,
+  rgbValuesForColor,
+  textColor,
   toggleSetMember,
   useThrottledFunction,
 } from './utils'
@@ -192,6 +195,7 @@ function HoverInfo({ feature }: { feature: mapboxgl.MapboxGeoJSONFeature }) {
     name: title,
     תיאור: hebrewDescription,
     description: englishDescription,
+    featureGroup,
   } = feature.properties ?? {}
   if (!title) {
     return null
@@ -211,9 +215,32 @@ function HoverInfo({ feature }: { feature: mapboxgl.MapboxGeoJSONFeature }) {
         direction: 'rtl',
       }}
     >
-      <h3 style={{ margin: '0 0 5px' }}>{title}</h3>
+      <h3 style={{ margin: '0 0 5px' }}>
+        {title} <FeatureTag feature={feature} />
+      </h3>
       {description && <p style={{ margin: '0' }}>{description}</p>}
     </div>
+  )
+}
+
+function FeatureTag({ feature }: { feature: mapboxgl.MapboxGeoJSONFeature }) {
+  const { featureGroup, stroke } = feature.properties ?? {}
+  if (!featureGroup || !stroke) {
+    return null
+  }
+
+  return (
+    <span
+      style={{
+        background: stroke,
+        color: textColor(...rgbValuesForColor(stroke)),
+        fontWeight: 'normal',
+        padding: '2px 5px',
+        borderRadius: '4px',
+      }}
+    >
+      {featureGroupDisplayName(featureGroup)}
+    </span>
   )
 }
 
