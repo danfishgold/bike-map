@@ -10,6 +10,7 @@ import Map, {
   ScaleControl,
   Source,
 } from 'react-map-gl'
+import ButtonBar from './ButtonBar'
 import { env } from './env'
 import {
   FeatureGroup,
@@ -27,6 +28,7 @@ type Point = { latitude: number; longitude: number }
 
 function App() {
   const { myMapsFeatures, osmFeatures } = useMapFeatures()
+  const [isLayerListOpen, setIsLayerListOpen] = useState(false)
   const [visibleLayers, setVisibleLayers] = useState(
     new Set<FeatureGroup | 'osmBikePaths'>([
       'osmBikePaths',
@@ -143,6 +145,8 @@ function App() {
           x
         </Marker>
         <LayerToggles
+          isOpen={isLayerListOpen}
+          setIsOpen={setIsLayerListOpen}
           visibleLayers={visibleLayers}
           setVisibleLayers={setVisibleLayers}
         />
@@ -153,27 +157,28 @@ function App() {
           />
         )}
       </Map>
-      <button
-        style={{
-          padding: '10px 20px',
-          margin: 0,
-          outline: 0,
-          border: 0,
-          background: 'azure',
-          color: 'navy',
-          fontSize: '1.5rem',
-          fontWeight: 700,
-        }}
-        onClick={() => {
-          if (route.path) {
-            route.clearPath()
-          } else {
-            route.setOrigin(viewState)
-          }
-        }}
-      >
-        {route.path ? 'הסרת מסלול' : 'חישוב מסלול'}
-      </button>
+      <ButtonBar>
+        {route.path ? (
+          <>
+            <ButtonBar.Button label='חזרה' onClick={() => route.clearPath()} />
+            <ButtonBar.Button label='אנדו' onClick={() => {}} />
+            <ButtonBar.Button label='עצירה' onClick={() => {}} />
+            <ButtonBar.Button label='סיום' onClick={() => {}} />
+          </>
+        ) : (
+          <>
+            <ButtonBar.Button
+              label='שכבות'
+              onClick={() => setIsLayerListOpen(!isLayerListOpen)}
+            />
+            <ButtonBar.Button label='מידע' onClick={() => {}} />
+            <ButtonBar.Button
+              label='מסלול'
+              onClick={() => route.setOrigin(viewState)}
+            />
+          </>
+        )}
+      </ButtonBar>
     </div>
   )
 }
@@ -235,15 +240,22 @@ function HoverInfo({
 }
 
 function LayerToggles({
+  isOpen,
+  setIsOpen,
   visibleLayers: visibleFeatures,
   setVisibleLayers: setVisibleFeatures,
 }: {
+  isOpen: boolean
+  setIsOpen: (isOpen: boolean) => void
   visibleLayers: Set<FeatureGroup | 'osmBikePaths'>
   setVisibleLayers: (
     visibleFeatures: Set<FeatureGroup | 'osmBikePaths'>,
   ) => void
 }) {
-  const [isOpen, setIsOpen] = useState(false)
+  if (!isOpen) {
+    return null
+  }
+
   return (
     <div
       style={{
@@ -254,32 +266,22 @@ function LayerToggles({
         background: 'white',
       }}
     >
-      {isOpen ? (
-        <>
-          <button onClick={() => setIsOpen(false)}>close</button>
-          {['osmBikePaths' as const, ...featureGroups].map((group) => (
-            <div key={group}>
-              <input
-                id={`layer-toggle-${group}`}
-                type='checkbox'
-                checked={visibleFeatures.has(group)}
-                onChange={(event) =>
-                  setVisibleFeatures(
-                    toggleSetMember(
-                      visibleFeatures,
-                      group,
-                      event.target.checked,
-                    ),
-                  )
-                }
-              />
-              <label htmlFor={`layer-toggle-${group}`}>{group}</label>
-            </div>
-          ))}
-        </>
-      ) : (
-        <button onClick={() => setIsOpen(true)}>שכבות</button>
-      )}
+      <button onClick={() => setIsOpen(false)}>close</button>
+      {['osmBikePaths' as const, ...featureGroups].map((group) => (
+        <div key={group}>
+          <input
+            id={`layer-toggle-${group}`}
+            type='checkbox'
+            checked={visibleFeatures.has(group)}
+            onChange={(event) =>
+              setVisibleFeatures(
+                toggleSetMember(visibleFeatures, group, event.target.checked),
+              )
+            }
+          />
+          <label htmlFor={`layer-toggle-${group}`}>{group}</label>
+        </div>
+      ))}
     </div>
   )
 }
