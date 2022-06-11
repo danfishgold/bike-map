@@ -143,7 +143,7 @@ function App() {
           longitude={viewState.longitude}
           anchor='center'
         >
-          x
+          ×
         </Marker>
         <LayerToggles
           isOpen={isLayerListOpen}
@@ -151,27 +151,31 @@ function App() {
           visibleLayers={visibleLayers}
           setVisibleLayers={setVisibleLayers}
         />
-        {hoverInfo && !isLayerListOpen && (
-          <HoverInfo feature={hoverInfo} onHide={() => setHoverInfo(null)} />
-        )}
+        {hoverInfo && !isLayerListOpen && <HoverInfo feature={hoverInfo} />}
       </Map>
       <ButtonBar>
         {route.path ? (
           <>
-            <ButtonBar.Button label='חזרה' onClick={() => route.clearPath()} />
-            <ButtonBar.Button label='אנדו' onClick={() => {}} />
-            <ButtonBar.Button label='עצירה' onClick={() => {}} />
-            <ButtonBar.Button label='סיום' onClick={() => {}} />
+            <ButtonBar.Button
+              label='חזרה'
+              color='red'
+              onClick={() => route.clearPath()}
+            />
+            <ButtonBar.Button label='אנדו' color='purple' onClick={() => {}} />
+            <ButtonBar.Button label='עצירה' color='salmon' onClick={() => {}} />
+            <ButtonBar.Button label='סיום' color='lime' onClick={() => {}} />
           </>
         ) : (
           <>
             <ButtonBar.Button
               label='שכבות'
+              color='azure'
               onClick={() => setIsLayerListOpen(!isLayerListOpen)}
             />
-            <ButtonBar.Button label='מידע' onClick={() => {}} />
+            <ButtonBar.Button label='שיתוף' color='blue' onClick={() => {}} />
             <ButtonBar.Button
               label='מסלול'
+              color='green'
               onClick={() => route.setOrigin(viewState)}
             />
           </>
@@ -183,13 +187,7 @@ function App() {
 
 export default App
 
-function HoverInfo({
-  feature,
-  onHide,
-}: {
-  feature: mapboxgl.MapboxGeoJSONFeature
-  onHide: () => void
-}) {
+function HoverInfo({ feature }: { feature: mapboxgl.MapboxGeoJSONFeature }) {
   const {
     name: title,
     תיאור: hebrewDescription,

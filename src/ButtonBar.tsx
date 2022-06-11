@@ -1,4 +1,5 @@
 import { PropsWithChildren } from 'react'
+import { rgbValuesForColor, textColor } from './utils'
 
 export default function ButtonBar({ children }: PropsWithChildren<{}>) {
   return (
@@ -28,7 +29,7 @@ function ButtonBarButton({
         outline: 0,
         border: 0,
         background: color,
-        color: 'black',
+        color: textColor(...rgbValuesForColor(color)),
         fontSize: '1rem',
         fontWeight: 700,
       }}
