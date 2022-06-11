@@ -161,24 +161,24 @@ function App() {
           <>
             <ButtonBar.Button
               label='חזרה'
-              color='red'
+              color={color1}
               onClick={() => route.clearPath()}
             />
-            <ButtonBar.Button label='אנדו' color='purple' onClick={() => {}} />
-            <ButtonBar.Button label='עצירה' color='salmon' onClick={() => {}} />
-            <ButtonBar.Button label='סיום' color='lime' onClick={() => {}} />
+            <ButtonBar.Button label='אנדו' color={color2} onClick={() => {}} />
+            <ButtonBar.Button label='עצירה' color={color3} onClick={() => {}} />
+            <ButtonBar.Button label='סיום' color={color4} onClick={() => {}} />
           </>
         ) : (
           <>
             <ButtonBar.Button
               label='שכבות'
-              color='azure'
+              color={color1}
               onClick={() => setIsLayerListOpen(!isLayerListOpen)}
             />
-            <ButtonBar.Button label='שיתוף' color='blue' onClick={() => {}} />
+            <ButtonBar.Button label='שיתוף' color={color2} onClick={() => {}} />
             <ButtonBar.Button
               label='מסלול'
-              color='green'
+              color={color3}
               onClick={() => route.setOrigin(viewState)}
             />
           </>
@@ -459,3 +459,8 @@ async function fetchRoute(origin: Point, destination: Point) {
   const feature = { type: 'Feature', ...data.routes[0] }
   return feature
 }
+
+const color1 = '#f0f9ff'
+const color2 = '#e0f2fe'
+const color3 = '#bae6fd'
+const color4 = '#7dd3fc'
