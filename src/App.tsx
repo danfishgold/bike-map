@@ -1,6 +1,6 @@
 import { Feature, LineString } from 'geojson'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { ReactElement, useCallback, useEffect, useState } from 'react'
+import { ReactElement, useEffect, useState } from 'react'
 import Map, {
   AttributionControl,
   GeolocateControl,
@@ -39,21 +39,8 @@ function App() {
       'hill',
     ]),
   )
-  const [hoverInfo, setHoverInfo] = useState<{
-    feature: mapboxgl.MapboxGeoJSONFeature
-    x: number
-    y: number
-  } | null>(null)
-
-  const onClick = useCallback((event: mapboxgl.MapLayerMouseEvent) => {
-    const {
-      features,
-      point: { x, y },
-    } = event
-    const hoveredFeature = features && features[0]
-
-    setHoverInfo(hoveredFeature ? { feature: hoveredFeature, x, y } : null)
-  }, [])
+  const [hoverInfo, setHoverInfo] =
+    useState<mapboxgl.MapboxGeoJSONFeature | null>(null)
 
   const [viewState, setViewState] = useState({
     longitude: 34.7804731,
@@ -62,6 +49,11 @@ function App() {
   })
 
   const route = useRoute(viewState)
+
+  const interactiveLayerIds = featureGroups
+    .filter((group) => visibleLayers.has(group))
+    .filter((group) => group !== 'roadArrow')
+    .map((group) => `my-maps-target-${group}`)
 
   return (
     <div
@@ -73,15 +65,24 @@ function App() {
     >
       <Map
         {...viewState}
-        onMove={(event) => setViewState(event.viewState)}
+        onMove={(event) => {
+          setViewState(event.viewState)
+          const { latitude, longitude, zoom } = event.viewState
+          if (zoom > 13) {
+            const point = event.target.project([longitude, latitude])
+            const features = event.target.queryRenderedFeatures(point, {
+              layers: interactiveLayerIds,
+            })
+            setHoverInfo(features[0] ?? null)
+          } else {
+            setHoverInfo(null)
+          }
+        }}
         style={{ width: '100%', flexGrow: 1 }}
         mapStyle='mapbox://styles/danfishgold/cl2821j55000714m1b7zb25yd'
         mapboxAccessToken={env.VITE_MAPBOX_TOKEN}
         attributionControl={false}
-        interactiveLayerIds={featureGroups
-          .filter((group) => visibleLayers.has(group))
-          .map((group) => `my-maps-target-${group}`)}
-        onClick={onClick}
+        interactiveLayerIds={interactiveLayerIds}
         onMouseEnter={(event) =>
           (event.target.getCanvas().style.cursor = 'pointer')
         }
@@ -151,10 +152,7 @@ function App() {
           setVisibleLayers={setVisibleLayers}
         />
         {hoverInfo && (
-          <HoverInfo
-            feature={hoverInfo.feature}
-            onHide={() => setHoverInfo(null)}
-          />
+          <HoverInfo feature={hoverInfo} onHide={() => setHoverInfo(null)} />
         )}
       </Map>
       <ButtonBar>
@@ -186,6 +184,41 @@ function App() {
 export default App
 
 function HoverInfo({
+  feature,
+  onHide,
+}: {
+  feature: mapboxgl.MapboxGeoJSONFeature
+  onHide: () => void
+}) {
+  const {
+    name: title,
+    תיאור: hebrewDescription,
+    description: englishDescription,
+  } = feature.properties ?? {}
+  if (!title) {
+    return null
+  }
+  const description = hebrewDescription || englishDescription
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: '10px',
+        right: '50px',
+        left: '10px',
+        padding: '5px',
+        background: 'white',
+        direction: 'rtl',
+      }}
+    >
+      <h3 style={{ margin: '0 0 5px' }}>{title}</h3>
+      {description && <p style={{ margin: '0' }}>{description}</p>}
+    </div>
+  )
+}
+
+function DebugHoverInfo({
   feature,
   onHide,
 }: {
