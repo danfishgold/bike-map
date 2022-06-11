@@ -151,7 +151,7 @@ function App() {
           visibleLayers={visibleLayers}
           setVisibleLayers={setVisibleLayers}
         />
-        {hoverInfo && (
+        {hoverInfo && !isLayerListOpen && (
           <HoverInfo feature={hoverInfo} onHide={() => setHoverInfo(null)} />
         )}
       </Map>
@@ -209,6 +209,7 @@ function HoverInfo({
         left: '10px',
         padding: '5px',
         background: 'white',
+        border: '1px solid black',
         direction: 'rtl',
       }}
     >
@@ -253,6 +254,7 @@ function DebugHoverInfo({
         left: '10px',
         padding: '5px',
         background: 'white',
+        border: '1px solid black',
         direction: 'rtl',
       }}
     >
@@ -297,6 +299,7 @@ function LayerToggles({
         left: '10px',
         padding: '5px',
         background: 'white',
+        border: '1px solid black',
       }}
     >
       <button onClick={() => setIsOpen(false)}>close</button>
