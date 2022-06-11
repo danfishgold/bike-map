@@ -175,11 +175,15 @@ function App() {
               color={color1}
               onClick={() => setIsLayerListOpen(!isLayerListOpen)}
             />
-            <ButtonBar.Button label='שיתוף' color={color2} onClick={() => {}} />
             <ButtonBar.Button
               label='מסלול'
-              color={color3}
+              color={color2}
               onClick={() => route.setOrigin(viewState)}
+            />
+            <ButtonBar.Button
+              label='שיתוף'
+              color={color3}
+              onClick={() => alert('אל תשתפו את האתר הזה בינתיים בבקשה')}
             />
           </>
         )}
