@@ -67,8 +67,14 @@ export function throttle<Args>(
   }
 }
 
+let rgbCache = new Map<string, [number, number, number]>()
+
 // https://stackoverflow.com/a/69057776
 export function rgbValuesForColor(color: string): [number, number, number] {
+  const cached = rgbCache.get(color)
+  if (cached) {
+    return cached
+  }
   var canvas = document.createElement('canvas')
   var context = canvas.getContext('2d')
   if (!context) {
@@ -77,6 +83,7 @@ export function rgbValuesForColor(color: string): [number, number, number] {
   context.fillStyle = color
   context.fillRect(0, 0, 1, 1)
   const [r, g, b] = context.getImageData(0, 0, 1, 1).data
+  rgbCache.set(color, [r, g, b])
   return [r, g, b]
 }
 
