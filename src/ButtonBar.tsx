@@ -1,4 +1,5 @@
 import { PropsWithChildren } from 'react'
+import { IconType } from 'react-icons'
 import { rgbValuesForColor, textColor } from './utils'
 
 export default function ButtonBar({ children }: PropsWithChildren<{}>) {
@@ -12,13 +13,15 @@ export default function ButtonBar({ children }: PropsWithChildren<{}>) {
 }
 
 function ButtonBarButton({
-  color = 'azure',
   label,
   onClick,
+  color = 'azure',
+  icon,
 }: {
-  label: string
   onClick: () => void
   color?: string
+  label: string
+  icon: IconType
 }) {
   return (
     <button
@@ -30,12 +33,18 @@ function ButtonBarButton({
         border: 0,
         background: color,
         color: textColor(...rgbValuesForColor(color)),
-        fontSize: '1rem',
+        fontSize: '0.8rem',
         fontWeight: 700,
+        display: 'grid',
+        gridTemplateRows: '20px 1fr',
+        gap: '5px',
+        alignItems: 'center',
+        justifyItems: 'center',
       }}
       onClick={onClick}
     >
-      {label}
+      {icon({ size: '100%' })}
+      <span>{label}</span>
     </button>
   )
 }

@@ -1,6 +1,19 @@
 import { Feature, LineString } from 'geojson'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { ReactElement, useEffect, useState } from 'react'
+import {
+  MdArrowBack,
+  MdCircle,
+  MdClose,
+  MdDone,
+  MdLayers,
+  MdMyLocation,
+  MdOutlineAddLocationAlt,
+  MdOutlineIosShare,
+  MdOutlineWrongLocation,
+  MdSettings,
+} from 'react-icons/md'
+import { TbRoute } from 'react-icons/tb'
 import Map, {
   AttributionControl,
   GeolocateControl,
@@ -127,7 +140,9 @@ function App() {
             <Marker
               latitude={route.path.origin.latitude}
               longitude={route.path.origin.longitude}
-            ></Marker>
+            >
+              <MdCircle color='red' size='20' />
+            </Marker>
             {route.path.feature && (
               <Source type='geojson' data={route.path.feature}>
                 <Layer
@@ -147,7 +162,7 @@ function App() {
           longitude={viewState.longitude}
           anchor='center'
         >
-          ×
+          <MdMyLocation size={20} />
         </Marker>
         <LayerToggles
           isOpen={isLayerListOpen}
@@ -162,29 +177,54 @@ function App() {
           <>
             <ButtonBar.Button
               label='חזרה'
+              icon={MdArrowBack}
               color={color1}
               onClick={() => route.clearPath()}
             />
-            <ButtonBar.Button label='אנדו' color={color2} onClick={() => {}} />
-            <ButtonBar.Button label='עצירה' color={color3} onClick={() => {}} />
-            <ButtonBar.Button label='סיום' color={color4} onClick={() => {}} />
+            <ButtonBar.Button
+              label='הסרת עצירה'
+              icon={MdOutlineWrongLocation}
+              color={color2}
+              onClick={() => {}}
+            />
+            <ButtonBar.Button
+              label='הוספת עצירה'
+              icon={MdOutlineAddLocationAlt}
+              color={color3}
+              onClick={() => {}}
+            />
+            <ButtonBar.Button
+              label='סיום'
+              icon={MdDone}
+              color={color4}
+              onClick={() => {}}
+            />
           </>
         ) : (
           <>
             <ButtonBar.Button
               label='שכבות'
+              icon={MdLayers}
               color={color1}
               onClick={() => setIsLayerListOpen(!isLayerListOpen)}
             />
             <ButtonBar.Button
-              label='מסלול'
+              label='תכנון מסלול'
+              icon={TbRoute}
               color={color2}
               onClick={() => route.setOrigin(viewState)}
             />
             <ButtonBar.Button
               label='שיתוף'
+              icon={MdOutlineIosShare}
               color={color3}
               onClick={() => alert('אל תשתפו את האתר הזה בינתיים בבקשה')}
+            />
+            <ButtonBar.Button
+              label='הגדרות'
+              icon={MdSettings}
+              color={color4}
+              onClick={() => alert('עוד אין')}
             />
           </>
         )}
@@ -333,7 +373,9 @@ function LayerToggles({
         direction: 'rtl',
       }}
     >
-      <button onClick={() => setIsOpen(false)}>סגירה</button>
+      <button onClick={() => setIsOpen(false)}>
+        <MdClose />
+      </button>
       {['osmBikePaths' as const, ...featureGroups].map((group) => (
         <div key={group}>
           <input
