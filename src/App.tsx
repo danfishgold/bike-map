@@ -1,10 +1,9 @@
 import { Feature, LineString } from 'geojson'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { ReactElement, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   MdArrowBack,
   MdCircle,
-  MdClose,
   MdDone,
   MdLayers,
   MdMyLocation,
@@ -25,21 +24,12 @@ import Map, {
 } from 'react-map-gl'
 import ButtonBar from './ButtonBar'
 import { env } from './env'
-import {
-  FeatureGroup,
-  featureGroupLayerType,
-  featureGroupPluralDisplayName,
-  featureGroups,
-  featureGroupSingularDisplayName,
-} from './myMapsMapData'
+import { HoverInfo } from './HoverInfo'
+import { LayerToggles } from './LayerToggles'
+import { MyMapsLayers } from './MyMapsLayers'
+import { FeatureGroup, featureGroups } from './myMapsMapData'
 import { useMapFeatures } from './useMapFeatures'
-import {
-  emptyFeatureGroup,
-  rgbValuesForColor,
-  textColor,
-  toggleSetMember,
-  useThrottledFunction,
-} from './utils'
+import { emptyFeatureGroup, useThrottledFunction } from './utils'
 
 type Point = { latitude: number; longitude: number }
 
@@ -117,7 +107,7 @@ function App() {
               type='geojson'
               data={myMapsFeatures?.get(group) ?? emptyFeatureGroup}
             >
-              <MyMapsLayer
+              <MyMapsLayers
                 group={group}
                 highlightedId={hoverInfo?.id ?? null}
               />
@@ -237,249 +227,6 @@ function App() {
 }
 
 export default App
-
-function HoverInfo({ feature }: { feature: mapboxgl.MapboxGeoJSONFeature }) {
-  const {
-    name: title,
-    תיאור: hebrewDescription,
-    description: englishDescription,
-    featureGroup,
-  } = feature.properties ?? {}
-  if (!title) {
-    return null
-  }
-  const description = hebrewDescription || englishDescription
-
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        top: '10px',
-        right: '50px',
-        left: '10px',
-        padding: '5px',
-        background: 'white',
-        border: '1px solid black',
-        direction: 'rtl',
-      }}
-    >
-      <h3 style={{ margin: '0 0 5px' }}>
-        {title} <FeatureTag feature={feature} />
-      </h3>
-      {description && <p style={{ margin: '0' }}>{description}</p>}
-    </div>
-  )
-}
-
-function FeatureTag({ feature }: { feature: mapboxgl.MapboxGeoJSONFeature }) {
-  const { featureGroup, stroke } = feature.properties ?? {}
-  if (!featureGroup || !stroke) {
-    return null
-  }
-
-  return (
-    <span
-      style={{
-        background: stroke,
-        color: textColor(...rgbValuesForColor(stroke)),
-        fontWeight: 'normal',
-        padding: '2px 5px',
-        borderRadius: '4px',
-      }}
-    >
-      {featureGroupSingularDisplayName(featureGroup)}
-    </span>
-  )
-}
-
-function DebugHoverInfo({
-  feature,
-  onHide,
-}: {
-  feature: mapboxgl.MapboxGeoJSONFeature
-  onHide: () => void
-}) {
-  const properties = feature.properties ?? {}
-  const keysToShow = [
-    'name',
-    'description',
-    'stroke',
-    'styleUrl',
-    'stroke-opacity',
-    'stroke-width',
-    'תיאור',
-    'סוג',
-    'status',
-    'type',
-    'fill',
-    'fill-opacity',
-    'icon',
-  ]
-  const otherKeys = Object.keys(properties).filter(
-    (key) => !keysToShow.includes(key),
-  )
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        top: '10px',
-        right: '50px',
-        left: '10px',
-        padding: '5px',
-        background: 'white',
-        border: '1px solid black',
-        direction: 'rtl',
-      }}
-    >
-      <ul>
-        {keysToShow.map(
-          (key) =>
-            properties[key] && (
-              <li key={key}>
-                {key}: {properties[key]}
-              </li>
-            ),
-        )}
-        {otherKeys.length > 0 && <li>{otherKeys.join(', ')}</li>}
-      </ul>
-      <button onClick={onHide}>hide</button>
-    </div>
-  )
-}
-
-function LayerToggles({
-  isOpen,
-  setIsOpen,
-  visibleLayers: visibleFeatures,
-  setVisibleLayers: setVisibleFeatures,
-}: {
-  isOpen: boolean
-  setIsOpen: (isOpen: boolean) => void
-  visibleLayers: Set<FeatureGroup | 'osmBikePaths'>
-  setVisibleLayers: (
-    visibleFeatures: Set<FeatureGroup | 'osmBikePaths'>,
-  ) => void
-}) {
-  if (!isOpen) {
-    return null
-  }
-
-  return (
-    <div
-      style={{
-        position: 'fixed',
-        top: '10px',
-        left: '10px',
-        padding: '5px',
-        background: 'white',
-        border: '1px solid black',
-        direction: 'rtl',
-      }}
-    >
-      <button onClick={() => setIsOpen(false)}>
-        <MdClose />
-      </button>
-      {['osmBikePaths' as const, ...featureGroups].map((group) => (
-        <div key={group}>
-          <input
-            id={`layer-toggle-${group}`}
-            type='checkbox'
-            checked={visibleFeatures.has(group)}
-            onChange={(event) =>
-              setVisibleFeatures(
-                toggleSetMember(visibleFeatures, group, event.target.checked),
-              )
-            }
-          />
-          <label htmlFor={`layer-toggle-${group}`}>
-            {group === 'osmBikePaths'
-              ? 'שבילי אופניים (OSM)'
-              : featureGroupPluralDisplayName(group)}
-          </label>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function MyMapsLayer({
-  group,
-  source,
-  highlightedId,
-}: {
-  group: FeatureGroup
-  source?: string | mapboxgl.AnySourceData
-  highlightedId: string | number | null
-}): ReactElement {
-  switch (featureGroupLayerType(group)) {
-    case 'line': {
-      return (
-        <>
-          <Layer
-            type='line'
-            id={`my-maps-${group}`}
-            source={source}
-            paint={{
-              'line-color': ['get', 'stroke'],
-              'line-width': [
-                '*',
-                ['case', ['==', ['id'], ['number', highlightedId, 0]], 2, 1],
-                ['get', 'stroke-width'],
-              ],
-              'line-opacity': ['get', 'stroke-opacity'],
-            }}
-            layout={{
-              'line-cap': 'round',
-            }}
-          />
-          <Layer
-            type='line'
-            id={`my-maps-target-${group}`}
-            source={source}
-            paint={{
-              'line-width': 20,
-              'line-color': '#ffffff',
-              'line-opacity': 0.00001,
-            }}
-          />
-        </>
-      )
-    }
-    case 'point': {
-      return (
-        <Layer
-          type='circle'
-          id={`my-maps-target-${group}`}
-          source={source}
-          paint={{ 'circle-color': ['get', 'icon-color'] }}
-        />
-      )
-    }
-    case 'polygon': {
-      return (
-        <>
-          <Layer
-            type='fill'
-            id={`my-maps-target-${group}`}
-            source={source}
-            paint={{
-              'fill-color': ['get', 'fill'],
-              'fill-opacity': [
-                'interpolate',
-                ['linear'],
-                ['case', ['==', ['id'], ['number', highlightedId, 0]], 0.5, 0],
-                0,
-                ['get', 'fill-opacity'],
-                1,
-                1,
-              ],
-            }}
-          />
-        </>
-      )
-    }
-  }
-}
 
 function useRoute(center: Point) {
   const [path, setPath] = useState<{
