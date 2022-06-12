@@ -5,11 +5,9 @@ import { FeatureGroup, featureGroupLayerType } from './myMapsMapData'
 export function MyMapsLayers({
   group,
   source,
-  highlightedId,
 }: {
   group: FeatureGroup
   source?: string | mapboxgl.AnySourceData
-  highlightedId: string | number | null
 }): ReactElement {
   switch (featureGroupLayerType(group)) {
     case 'line': {
@@ -23,7 +21,7 @@ export function MyMapsLayers({
               'line-color': ['get', 'stroke'],
               'line-width': [
                 '*',
-                ['case', ['==', ['id'], ['number', highlightedId, 0]], 2, 1],
+                ['case', ['boolean', ['feature-state', 'hover'], false], 2, 1],
                 ['get', 'stroke-width'],
               ],
               'line-opacity': ['get', 'stroke-opacity'],
@@ -69,7 +67,12 @@ export function MyMapsLayers({
               'fill-opacity': [
                 'interpolate',
                 ['linear'],
-                ['case', ['==', ['id'], ['number', highlightedId, 0]], 0.5, 0],
+                [
+                  'case',
+                  ['boolean', ['feature-state', 'hover'], false],
+                  0.5,
+                  0,
+                ],
                 0,
                 ['get', 'fill-opacity'],
                 1,

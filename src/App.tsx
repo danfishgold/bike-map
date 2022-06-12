@@ -6,6 +6,7 @@ import {
   Point as GeoJsonPoint,
   Position,
 } from 'geojson'
+import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { useEffect, useMemo, useState } from 'react'
 import {
@@ -84,15 +85,24 @@ function App() {
         onMove={(event) => {
           setViewState(event.viewState)
           const { latitude, longitude, zoom } = event.viewState
-          if (zoom > 13) {
-            const point = event.target.project([longitude, latitude])
-            const features = event.target.queryRenderedFeatures(point, {
-              layers: interactiveLayerIds,
-            })
-            setHoverInfo(features[0] ?? null)
-          } else {
-            setHoverInfo(null)
+          const newHoverInfo =
+            zoom > 13
+              ? featureAtPosition({
+                  map: event.target,
+                  position: [longitude, latitude],
+                  interactiveLayerIds,
+                })
+              : null
+
+          if (newHoverInfo?.id !== hoverInfo?.id) {
+            if (hoverInfo) {
+              event.target.setFeatureState(hoverInfo, { hover: false })
+            }
+            if (newHoverInfo) {
+              event.target.setFeatureState(newHoverInfo, { hover: true })
+            }
           }
+          setHoverInfo(newHoverInfo)
         }}
         style={{ width: '100%', flexGrow: 1 }}
         mapStyle='mapbox://styles/danfishgold/cl2821j55000714m1b7zb25yd'
@@ -116,10 +126,7 @@ function App() {
               type='geojson'
               data={myMapsFeatures?.get(group) ?? emptyFeatureGroup}
             >
-              <MyMapsLayers
-                group={group}
-                highlightedId={hoverInfo?.id ?? null}
-              />
+              <MyMapsLayers group={group} />
             </Source>
           ))}
         {osmFeatures && visibleLayers.has('osmBikePaths') && (
@@ -402,4 +409,20 @@ function pointFeature(point: Point | Position): Feature<GeoJsonPoint> {
     geometry: { type: 'Point', coordinates },
     properties: {},
   }
+}
+
+function featureAtPosition({
+  map,
+  position,
+  interactiveLayerIds,
+}: {
+  map: mapboxgl.Map
+  position: mapboxgl.LngLatLike
+  interactiveLayerIds: string[]
+}) {
+  const point = map.project(position)
+  const features = map.queryRenderedFeatures(point, {
+    layers: interactiveLayerIds,
+  })
+  return features[0] ?? null
 }
