@@ -32,7 +32,7 @@ function ButtonBarButton({
       disabled={disabled}
       style={{
         flexGrow: 1,
-        padding: '10px 20px',
+        padding: '10px 20px 5px',
         margin: 0,
         outline: 0,
         border: 0,
