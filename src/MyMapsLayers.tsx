@@ -32,16 +32,18 @@ export function MyMapsLayers({
               'line-cap': 'round',
             }}
           />
-          <Layer
-            type='line'
-            id={`my-maps-target-${group}`}
-            source={source}
-            paint={{
-              'line-width': 20,
-              'line-color': '#ffffff',
-              'line-opacity': 0.00001,
-            }}
-          />
+          {group !== 'roadArrow' && (
+            <Layer
+              type='line'
+              id={`my-maps-target-${group}`}
+              source={source}
+              paint={{
+                'line-width': 20,
+                'line-color': '#ffffff',
+                'line-opacity': 0.00001,
+              }}
+            />
+          )}
         </>
       )
     }
