@@ -457,15 +457,25 @@ function MyMapsLayer({
     }
     case 'polygon': {
       return (
-        <Layer
-          type='fill'
-          id={`my-maps-target-${group}`}
-          source={source}
-          paint={{
-            'fill-color': ['get', 'fill'],
-            'fill-opacity': ['get', 'fill-opacity'],
-          }}
-        />
+        <>
+          <Layer
+            type='fill'
+            id={`my-maps-target-${group}`}
+            source={source}
+            paint={{
+              'fill-color': ['get', 'fill'],
+              'fill-opacity': [
+                'interpolate',
+                ['linear'],
+                ['case', ['==', ['id'], ['number', highlightedId, 0]], 0.5, 0],
+                0,
+                ['get', 'fill-opacity'],
+                1,
+                1,
+              ],
+            }}
+          />
+        </>
       )
     }
   }
