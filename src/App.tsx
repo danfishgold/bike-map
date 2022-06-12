@@ -117,7 +117,10 @@ function App() {
               type='geojson'
               data={myMapsFeatures?.get(group) ?? emptyFeatureGroup}
             >
-              <MyMapsLayer group={group} />
+              <MyMapsLayer
+                group={group}
+                highlightedId={hoverInfo?.id ?? null}
+              />
             </Source>
           ))}
         {osmFeatures && visibleLayers.has('osmBikePaths') && (
@@ -402,9 +405,11 @@ function LayerToggles({
 function MyMapsLayer({
   group,
   source,
+  highlightedId,
 }: {
   group: FeatureGroup
   source?: string | mapboxgl.AnySourceData
+  highlightedId: string | number | null
 }): ReactElement {
   switch (featureGroupLayerType(group)) {
     case 'line': {
@@ -416,7 +421,11 @@ function MyMapsLayer({
             source={source}
             paint={{
               'line-color': ['get', 'stroke'],
-              'line-width': ['get', 'stroke-width'],
+              'line-width': [
+                '*',
+                ['case', ['==', ['id'], ['number', highlightedId, 0]], 2, 1],
+                ['get', 'stroke-width'],
+              ],
               'line-opacity': ['get', 'stroke-opacity'],
             }}
             layout={{

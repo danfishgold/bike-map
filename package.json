@@ -13,6 +13,7 @@
     "@types/geojson": "^7946.0.8",
     "envsafe": "^2.0.3",
     "mapbox-gl": "^2.8.2",
+    "nanoid": "^4.0.0",
     "node-fetch": "^3.2.5",
     "osmtogeojson": "^3.0.0-beta.4",
     "react": "^18.0.0",

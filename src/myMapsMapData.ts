@@ -1,8 +1,11 @@
 import * as tj from '@tmcw/togeojson'
 import { Feature, FeatureCollection, Geometry } from 'geojson'
 import 'mapbox-gl/dist/mapbox-gl.css'
+import { customAlphabet } from 'nanoid'
 import { env } from './env'
 import { groupBy } from './utils'
+
+const nanoid = customAlphabet('1234567890', 18)
 
 type MyMapsProperties = {
   name: string
@@ -84,7 +87,15 @@ async function fetchAllFeatures(): Promise<
     throw new Error('GeoJSON has null geometry')
   }
 
-  return geoJson as FeatureCollection<Geometry, MyMapsProperties>
+  const featuresButWithIds = geoJson.features.map((feature) => ({
+    ...feature,
+    id: parseInt(nanoid()),
+  }))
+
+  return { ...geoJson, features: featuresButWithIds } as FeatureCollection<
+    Geometry,
+    MyMapsProperties
+  >
 }
 
 function parseFeatureGroup(
