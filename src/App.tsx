@@ -14,9 +14,10 @@ import ButtonBar from './ButtonBar'
 import { env } from './env'
 import {
   FeatureGroup,
-  featureGroupDisplayName,
   featureGroupLayerType,
+  featureGroupPluralDisplayName,
   featureGroups,
+  featureGroupSingularDisplayName,
 } from './myMapsMapData'
 import { useMapFeatures } from './useMapFeatures'
 import {
@@ -243,7 +244,7 @@ function FeatureTag({ feature }: { feature: mapboxgl.MapboxGeoJSONFeature }) {
         borderRadius: '4px',
       }}
     >
-      {featureGroupDisplayName(featureGroup)}
+      {featureGroupSingularDisplayName(featureGroup)}
     </span>
   )
 }
@@ -329,9 +330,10 @@ function LayerToggles({
         padding: '5px',
         background: 'white',
         border: '1px solid black',
+        direction: 'rtl',
       }}
     >
-      <button onClick={() => setIsOpen(false)}>close</button>
+      <button onClick={() => setIsOpen(false)}>סגירה</button>
       {['osmBikePaths' as const, ...featureGroups].map((group) => (
         <div key={group}>
           <input
@@ -344,7 +346,11 @@ function LayerToggles({
               )
             }
           />
-          <label htmlFor={`layer-toggle-${group}`}>{group}</label>
+          <label htmlFor={`layer-toggle-${group}`}>
+            {group === 'osmBikePaths'
+              ? 'שבילי אופניים (OSM)'
+              : featureGroupPluralDisplayName(group)}
+          </label>
         </div>
       ))}
     </div>

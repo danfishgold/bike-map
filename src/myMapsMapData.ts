@@ -187,7 +187,7 @@ export function featureGroupLayerType(
   }
 }
 
-export function featureGroupDisplayName(layer: FeatureGroup): string {
+export function featureGroupSingularDisplayName(layer: FeatureGroup): string {
   switch (layer) {
     case 'bikePath':
       return 'שביל'
@@ -196,7 +196,7 @@ export function featureGroupDisplayName(layer: FeatureGroup): string {
     case 'alsoRecommendedRoadMaybe?':
       return 'מסלול חלופי'
     case 'roadArrow':
-      return 'חיצי סטריות'
+      return 'חץ סטריות'
     case 'dangerousRoad':
       return 'כביש מסוכן'
     case 'ofney dan':
@@ -227,6 +227,51 @@ export function featureGroupDisplayName(layer: FeatureGroup): string {
       return 'גבעה'
     case 'calmedTrafficArea':
       return 'איזור מיתון תנועה'
+    case 'point':
+      return 'נקודה'
+  }
+}
+
+export function featureGroupPluralDisplayName(layer: FeatureGroup): string {
+  switch (layer) {
+    case 'bikePath':
+      return 'שבילים'
+    case 'recommendedRoad':
+      return 'מסלולים חלופיים'
+    case 'alsoRecommendedRoadMaybe?':
+      return 'מסלולים חלופיים'
+    case 'roadArrow':
+      return 'חיצי סטריות'
+    case 'dangerousRoad':
+      return 'כבישים מסוכנים'
+    case 'ofney dan':
+      return 'אופנידן'
+    case 'planned':
+      return 'שבילים מתוכננים'
+    case 'inProgress':
+      return 'שבילים בביצוע'
+    case 'missing':
+      return 'שבילים חסרים'
+    case 'dirtRoad':
+      return 'שבילי עפר'
+    case 'bridge':
+      return 'גשרים'
+    case 'road???':
+      return '???'
+    case 'unknown':
+      return '???'
+    case 'mistake':
+      return 'טעויות'
+    case 'unknownPolygon':
+      return 'שטחים כלשהם'
+    case 'trainStationIsochrone':
+      return 'איזוכרוני תחנת רכבת'
+    case 'coveredArea':
+      return 'שטחים מכוסים'
+    case 'hill':
+      return 'גבעות'
+    case 'calmedTrafficArea':
+      return 'איזורי מיתון תנועה'
     case 'point':
       return 'נקודות'
   }
