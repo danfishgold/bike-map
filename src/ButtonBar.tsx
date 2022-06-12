@@ -17,14 +17,19 @@ function ButtonBarButton({
   onClick,
   color = 'azure',
   icon,
+  disabled = false,
 }: {
   onClick: () => void
   color?: string
   label: string
   icon: IconType
+  disabled?: boolean
 }) {
+  const [r, g, b] = rgbValuesForColor(textColor(...rgbValuesForColor(color)))
+  const foregroundColor = `rgba(${r}, ${g}, ${b}, ${disabled ? 0.4 : 1})`
   return (
     <button
+      disabled={disabled}
       style={{
         flexGrow: 1,
         padding: '10px 20px',
@@ -32,7 +37,7 @@ function ButtonBarButton({
         outline: 0,
         border: 0,
         background: color,
-        color: textColor(...rgbValuesForColor(color)),
+        color: foregroundColor,
         fontSize: '0.8rem',
         fontWeight: 700,
         display: 'grid',
@@ -43,7 +48,7 @@ function ButtonBarButton({
       }}
       onClick={onClick}
     >
-      {icon({ size: '100%' })}
+      {icon({ size: '100%', color: foregroundColor })}
       <span>{label}</span>
     </button>
   )

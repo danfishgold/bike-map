@@ -1,10 +1,17 @@
-import { Feature, LineString } from 'geojson'
+import {
+  Feature,
+  FeatureCollection,
+  Geometry,
+  LineString,
+  Point as GeoJsonPoint,
+  Position,
+} from 'geojson'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   MdArrowBack,
-  MdCircle,
   MdDone,
+  MdEdit,
   MdLayers,
   MdMyLocation,
   MdOutlineAddLocationAlt,
@@ -29,7 +36,7 @@ import { LayerToggles } from './LayerToggles'
 import { MyMapsLayers } from './MyMapsLayers'
 import { FeatureGroup, featureGroups } from './myMapsMapData'
 import { useMapFeatures } from './useMapFeatures'
-import { emptyFeatureGroup, useThrottledFunction } from './utils'
+import { compact, emptyFeatureGroup, useThrottledFunction } from './utils'
 
 type Point = { latitude: number; longitude: number }
 
@@ -54,7 +61,10 @@ function App() {
     zoom: 12,
   })
 
-  const route = useRoute(viewState)
+  const [mode, setMode] = useState<'browse' | 'constructRoute' | 'viewRoute'>(
+    'browse',
+  )
+  const route = useRoute(viewState, mode === 'constructRoute')
 
   const interactiveLayerIds = featureGroups
     .filter((group) => visibleLayers.has(group))
@@ -127,28 +137,25 @@ function App() {
             />
           </Source>
         )}
-        {route.path && (
-          <>
-            <Marker
-              latitude={route.path.origin.latitude}
-              longitude={route.path.origin.longitude}
-            >
-              <MdCircle color='red' size='20' />
-            </Marker>
-            {route.path.feature && (
-              <Source type='geojson' data={route.path.feature}>
-                <Layer
-                  type='line'
-                  id='route'
-                  paint={{
-                    'line-color': 'black',
-                    'line-width': 3,
-                  }}
-                />
-              </Source>
-            )}
-          </>
-        )}
+        <Source type='geojson' data={route.features}>
+          <Layer
+            filter={['==', ['geometry-type'], 'LineString']}
+            type='line'
+            id='route-lines'
+            paint={{
+              'line-color': 'green',
+              'line-width': 14,
+            }}
+            layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+          />
+          <Layer
+            filter={['==', ['geometry-type'], 'Point']}
+            type='circle'
+            id='route-points'
+            paint={{ 'circle-radius': 4, 'circle-color': 'white' }}
+          />
+        </Source>
+
         <Marker
           latitude={viewState.latitude}
           longitude={viewState.longitude}
@@ -165,34 +172,7 @@ function App() {
         {hoverInfo && !isLayerListOpen && <HoverInfo feature={hoverInfo} />}
       </Map>
       <ButtonBar>
-        {route.path ? (
-          <>
-            <ButtonBar.Button
-              label='חזרה'
-              icon={MdArrowBack}
-              color={color1}
-              onClick={() => route.clearPath()}
-            />
-            <ButtonBar.Button
-              label='הסרת עצירה'
-              icon={MdOutlineWrongLocation}
-              color={color2}
-              onClick={() => {}}
-            />
-            <ButtonBar.Button
-              label='הוספת עצירה'
-              icon={MdOutlineAddLocationAlt}
-              color={color3}
-              onClick={() => {}}
-            />
-            <ButtonBar.Button
-              label='סיום'
-              icon={MdDone}
-              color={color4}
-              onClick={() => {}}
-            />
-          </>
-        ) : (
+        {mode === 'browse' ? (
           <>
             <ButtonBar.Button
               label='שכבות'
@@ -204,7 +184,7 @@ function App() {
               label='תכנון מסלול'
               icon={TbRoute}
               color={color2}
-              onClick={() => route.setOrigin(viewState)}
+              onClick={() => setMode('constructRoute')}
             />
             <ButtonBar.Button
               label='שיתוף'
@@ -219,6 +199,61 @@ function App() {
               onClick={() => alert('עוד אין')}
             />
           </>
+        ) : mode === 'constructRoute' ? (
+          <>
+            <ButtonBar.Button
+              label='חזרה'
+              icon={MdArrowBack}
+              color={color1}
+              onClick={() => {
+                route.clear()
+                setMode('browse')
+              }}
+            />
+            <ButtonBar.Button
+              disabled={!route.canRemoveStop}
+              label='הסרת עצירה'
+              icon={MdOutlineWrongLocation}
+              color={color2}
+              onClick={() => route.removeStop()}
+            />
+            <ButtonBar.Button
+              label='הוספת עצירה'
+              icon={MdOutlineAddLocationAlt}
+              color={color3}
+              onClick={() => route.addStop()}
+            />
+            <ButtonBar.Button
+              label='סיום'
+              icon={MdDone}
+              color={color4}
+              onClick={() => setMode('viewRoute')}
+            />
+          </>
+        ) : (
+          <>
+            <ButtonBar.Button
+              label='חזרה'
+              icon={MdArrowBack}
+              color={color1}
+              onClick={() => {
+                route.clear()
+                setMode('browse')
+              }}
+            />
+            <ButtonBar.Button
+              label='עריכת מסלול'
+              icon={MdEdit}
+              color={color2}
+              onClick={() => setMode('constructRoute')}
+            />
+            <ButtonBar.Button
+              label='שיתוף'
+              icon={MdOutlineIosShare}
+              color={color3}
+              onClick={() => alert('בסופו של דבר')}
+            />
+          </>
         )}
       </ButtonBar>
     </div>
@@ -227,40 +262,116 @@ function App() {
 
 export default App
 
-function useRoute(center: Point) {
-  const [path, setPath] = useState<{
-    origin: Point
-    destination: Point | null
-    feature: Feature<LineString> | null
-  } | null>(null)
+type Segment = {
+  origin: Point
+  destination: Point
+  feature: Feature<LineString>
+}
 
-  const throttledFetchRoute = useThrottledFunction(
+type PartialSegment = {
+  origin: Point
+  destination: Point
+  feature: Feature<LineString> | null
+}
+
+function useRoute(center: Point, isTracking: boolean) {
+  const [segment, setSegment] = useState<PartialSegment | null>(null)
+
+  const [pastSegments, setPastSegments] = useState<Segment[]>([])
+
+  const throttledFetchSegment = useThrottledFunction(
     (origin: Point, destination: Point) => {
       console.log('calculating')
       fetchRoute(origin, destination).then((feature) =>
-        setPath({ origin, destination, feature }),
+        setSegment({ origin, destination, feature }),
       )
     },
     250,
   )
 
   useEffect(() => {
-    if (!path || distanceSortOf(path.origin, center) < 0.001) {
+    if (!isTracking) {
+      return
+    }
+    if (!segment || distanceSortOf(segment.origin, center) < 0.001) {
       return
     }
 
-    throttledFetchRoute(path.origin, center)
-  }, [center, path?.origin])
+    throttledFetchSegment(segment.origin, center)
+  }, [center, segment?.origin, isTracking])
 
-  const setOrigin = (origin: Point) => {
-    setPath({ origin, destination: null, feature: null })
+  // useEffect(() => {
+  //   if (isTracking) {
+  //     setSegment({ origin: center, destination: center, feature: null })
+  //   }
+  // }, [isTracking])
+
+  const clear = () => {
+    setPastSegments([])
+    setSegment(null)
   }
 
-  const clearPath = () => {
-    setPath(null)
+  const addStop = () => {
+    if (segment && !segment?.feature) {
+      return
+    }
+    if (segment) {
+      setPastSegments([...pastSegments, segment as Segment])
+    }
+    const lastSegment = segment ? segment : pastSegments.at(-1)
+    const lastDestination = lastSegment?.feature?.geometry.coordinates.at(-1)
+    const origin = lastDestination
+      ? { longitude: lastDestination[0], latitude: lastDestination[1] }
+      : center
+
+    setSegment({
+      origin,
+      destination: center,
+      feature: null,
+    })
   }
 
-  return { setOrigin, path, clearPath }
+  const removeStop = () => {
+    if (!pastSegments.length) {
+      return
+    }
+    const lastSegment = pastSegments[pastSegments.length - 1]
+    setPastSegments(pastSegments.slice(0, -1))
+    setSegment({
+      origin: lastSegment.origin,
+      destination: center,
+      feature: null,
+    })
+  }
+
+  const features: FeatureCollection<Geometry> = useMemo(() => {
+    const segments = compact([...pastSegments, segment])
+    const lineFeatures: Feature<LineString>[] = compact(
+      segments.map((segment) => segment.feature),
+    )
+
+    const pointFeatures: Feature<GeoJsonPoint>[] = segments.flatMap(
+      (segment): Feature<GeoJsonPoint>[] => {
+        const points = segment.feature
+          ? compact([
+              segment.feature.geometry.coordinates.at(0),
+              segment.feature.geometry.coordinates.at(-1),
+            ])
+          : []
+
+        return points.map(pointFeature)
+      },
+    )
+
+    return {
+      type: 'FeatureCollection',
+      features: [...lineFeatures, ...pointFeatures],
+    }
+  }, [pastSegments, segment])
+
+  const canRemoveStop = pastSegments.length > 0
+
+  return { canRemoveStop, clear, addStop, removeStop, features }
 }
 
 function distanceSortOf(p1: Point, p2: Point) {
@@ -281,3 +392,14 @@ const color1 = '#f0f9ff'
 const color2 = '#e0f2fe'
 const color3 = '#bae6fd'
 const color4 = '#7dd3fc'
+
+function pointFeature(point: Point | Position): Feature<GeoJsonPoint> {
+  const coordinates = Array.isArray(point)
+    ? point
+    : [point.longitude, point.latitude]
+  return {
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates },
+    properties: {},
+  }
+}

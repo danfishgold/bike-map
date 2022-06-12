@@ -86,3 +86,9 @@ export function textColor(r: number, g: number, b: number): string {
   const textColor = brightness > 125 ? 'black' : 'white'
   return textColor
 }
+
+export function compact<T>(array: (T | null | undefined)[]): T[] {
+  return array.flatMap((item) =>
+    item !== undefined && item !== null ? [item] : [],
+  )
+}
