@@ -21,7 +21,6 @@ type MyMapsProperties = {
 const lineGroups = [
   'bikePath',
   'recommendedRoad',
-  'alsoRecommendedRoadMaybe?',
   'roadArrow',
   'dangerousRoad',
   'ofney dan',
@@ -121,17 +120,11 @@ function parseLineGroup(
   const { name, stroke, status, סוג } = feature.properties
   if (stroke === '#ff5252') {
     return 'dangerousRoad'
-  } else if (stroke === '#0ba9cc') {
-    return 'recommendedRoad'
-  } else if (stroke === '#4186f0') {
-    if (
-      feature.geometry.type === 'LineString' &&
-      feature.geometry.coordinates.length === 3 &&
-      /^קו \d+$/.test(name)
-    ) {
+  } else if (stroke === '#0ba9cc' || stroke === '#4186f0') {
+    if (/^קו \d+$/.test(name)) {
       return 'roadArrow'
     } else {
-      return 'alsoRecommendedRoadMaybe?'
+      return 'recommendedRoad'
     }
   } else if (stroke === '#c6a4cf') {
     return 'ofney dan'
@@ -204,8 +197,6 @@ export function featureGroupSingularDisplayName(layer: FeatureGroup): string {
       return 'שביל'
     case 'recommendedRoad':
       return 'מסלול חלופי'
-    case 'alsoRecommendedRoadMaybe?':
-      return 'מסלול חלופי'
     case 'roadArrow':
       return 'חץ סטריות'
     case 'dangerousRoad':
@@ -248,8 +239,6 @@ export function featureGroupPluralDisplayName(layer: FeatureGroup): string {
     case 'bikePath':
       return 'שבילים'
     case 'recommendedRoad':
-      return 'מסלולים חלופיים'
-    case 'alsoRecommendedRoadMaybe?':
       return 'מסלולים חלופיים'
     case 'roadArrow':
       return 'חיצי סטריות'
