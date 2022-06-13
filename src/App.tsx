@@ -8,7 +8,7 @@ import {
 } from 'geojson'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { PropsWithChildren, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   MdArrowBack,
   MdDone,
@@ -37,6 +37,7 @@ import { HoverInfo } from './HoverInfo'
 import { LayerToggles } from './LayerToggles'
 import { MyMapsLayers } from './MyMapsLayers'
 import { FeatureGroup, featureGroups } from './myMapsMapData'
+import { Pane } from './Pane'
 import { useMapFeatures } from './useMapFeatures'
 import { compact, emptyFeatureGroup, useThrottledFunction } from './utils'
 
@@ -201,21 +202,41 @@ function App() {
           visibleLayers={visibleLayers}
           setVisibleLayers={setVisibleLayers}
         />
-        <Pane isOpen={currentlyOpenPane === 'settings'}>
+        <Pane
+          isOpen={currentlyOpenPane === 'settings'}
+          style={{
+            bottom: '10px',
+            left: '10px',
+            right: '10px',
+            maxHeight: 'calc(100% - 40px)',
+          }}
+        >
           <h2>הגדרות</h2>
-          <button onClick={() => setBaseMap('light')}>בהיר</button>
-          <button onClick={() => setBaseMap('dark')}>כהה</button>
-          <input
-            type='checkbox'
-            checked={isDebugging}
-            onChange={(event) => setIsDebugging(event.target.checked)}
-            id='settings__is-debugging-checkbox'
-          />
-          <label htmlFor='settings__is-debugging-checkbox'>
-            מצב דיבוג (אם אתם לא דן אז לא כדאי)
-          </label>
+          <div>
+            <button onClick={() => setBaseMap('light')}>בהיר</button>
+            <button onClick={() => setBaseMap('dark')}>כהה</button>
+          </div>
+          <div>
+            <input
+              type='checkbox'
+              checked={isDebugging}
+              onChange={(event) => setIsDebugging(event.target.checked)}
+              id='settings__is-debugging-checkbox'
+            />
+            <label htmlFor='settings__is-debugging-checkbox'>
+              מצב דיבוג (אם אתם לא דן אז לא כדאי)
+            </label>
+          </div>
         </Pane>
-        <Pane isOpen={currentlyOpenPane === 'about'}>
+        <Pane
+          isOpen={currentlyOpenPane === 'about'}
+          style={{
+            top: '10px',
+            left: '10px',
+            right: '10px',
+            maxHeight: 'calc(100% - 40px)',
+          }}
+        >
           <h2>אודות</h2>
           <p>האתר הזה נבנה על ידי דן פישגולד.</p>
           <p>
@@ -511,32 +532,4 @@ function featureAtPosition({
     layers: interactiveLayerIds,
   })
   return features[0] ?? null
-}
-
-function Pane({ isOpen, children }: PropsWithChildren<{ isOpen: boolean }>) {
-  if (!isOpen) {
-    return null
-  }
-
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        top: '10px',
-        left: '10px',
-        right: '10px',
-        background: 'white',
-        padding: '10px',
-        border: '1px solid black',
-        zIndex: 2,
-        direction: 'rtl',
-        fontSize: '1.1rem',
-        lineHeight: 1.25,
-        maxHeight: 'calc(100% - 40px)',
-        overflowY: 'scroll',
-      }}
-    >
-      {children}
-    </div>
-  )
 }

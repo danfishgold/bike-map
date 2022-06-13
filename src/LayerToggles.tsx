@@ -4,6 +4,7 @@ import {
   featureGroupPluralDisplayName,
   featureGroups,
 } from './myMapsMapData'
+import { Pane } from './Pane'
 import { toggleSetMember } from './utils'
 
 export function LayerToggles({
@@ -19,25 +20,19 @@ export function LayerToggles({
     visibleFeatures: Set<FeatureGroup | 'osmBikePaths'>,
   ) => void
 }) {
-  if (!isOpen) {
-    return null
-  }
-
   return (
-    <div
+    <Pane
+      isOpen={isOpen}
       style={{
-        position: 'fixed',
         top: '10px',
         left: '10px',
-        padding: '5px',
-        background: 'white',
-        border: '1px solid black',
-        direction: 'rtl',
+        maxHeight: 'calc(100% - 40px)',
       }}
     >
       <button onClick={() => setIsOpen(false)}>
         <MdClose />
       </button>
+      <h2>שכבות</h2>
       {['osmBikePaths' as const, ...featureGroups].map((group) => (
         <div key={group}>
           <input
@@ -57,6 +52,6 @@ export function LayerToggles({
           </label>
         </div>
       ))}
-    </div>
+    </Pane>
   )
 }

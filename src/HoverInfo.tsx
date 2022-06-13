@@ -1,4 +1,5 @@
 import { featureGroupSingularDisplayName } from './myMapsMapData'
+import { Pane } from './Pane'
 import { rgbValuesForColor, textColor } from './utils'
 
 export function HoverInfo({
@@ -18,23 +19,19 @@ export function HoverInfo({
   const description = hebrewDescription || englishDescription
 
   return (
-    <div
+    <Pane
+      isOpen
       style={{
-        position: 'fixed',
         top: '10px',
         right: '50px',
         left: '10px',
-        padding: '5px',
-        background: 'white',
-        border: '1px solid black',
-        direction: 'rtl',
       }}
     >
       <h3 style={{ margin: '0 0 5px' }}>
         {title} <FeatureTag feature={feature} />
       </h3>
       {description && <p style={{ margin: '0' }}>{description}</p>}
-    </div>
+    </Pane>
   )
 }
 
@@ -85,16 +82,12 @@ function DebugHoverInfo({
     (key) => !keysToShow.includes(key),
   )
   return (
-    <div
+    <Pane
+      isOpen
       style={{
-        position: 'fixed',
         top: '10px',
         right: '50px',
         left: '10px',
-        padding: '5px',
-        background: 'white',
-        border: '1px solid black',
-        direction: 'rtl',
       }}
     >
       <ul>
@@ -109,7 +102,7 @@ function DebugHoverInfo({
         {otherKeys.length > 0 && <li>{otherKeys.join(', ')}</li>}
       </ul>
       <button onClick={() => console.log({ feature })}>לוג</button>
-    </div>
+    </Pane>
   )
 }
 
