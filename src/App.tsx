@@ -8,11 +8,12 @@ import {
 } from 'geojson'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { useEffect, useMemo, useState } from 'react'
+import { PropsWithChildren, useEffect, useMemo, useState } from 'react'
 import {
   MdArrowBack,
   MdDone,
   MdEdit,
+  MdInfoOutline,
   MdLayers,
   MdMyLocation,
   MdOutlineAddLocationAlt,
@@ -43,7 +44,10 @@ type Point = { latitude: number; longitude: number }
 
 function App() {
   const { myMapsFeatures, osmFeatures } = useMapFeatures()
-  const [isLayerListOpen, setIsLayerListOpen] = useState(false)
+  const [currentlyOpenPane, setCurrentlyOpenPane] = useState<
+    'settings' | 'layers' | 'about' | null
+  >(null)
+  const [baseMap, setBaseMap] = useState<'light' | 'dark'>('light')
   const [visibleLayers, setVisibleLayers] = useState(
     new Set<FeatureGroup | 'osmBikePaths'>([
       'osmBikePaths',
@@ -104,8 +108,12 @@ function App() {
           }
           setHoverInfo(newHoverInfo)
         }}
-        style={{ width: '100%', flexGrow: 1 }}
-        mapStyle='mapbox://styles/danfishgold/cl2821j55000714m1b7zb25yd'
+        style={{ flexGrow: 1, position: 'relative' }}
+        mapStyle={
+          baseMap === 'light'
+            ? 'mapbox://styles/danfishgold/cl2821j55000714m1b7zb25yd'
+            : 'mapbox://styles/danfishgold/cl4d043ck000w14p2tm2v444j'
+        }
         mapboxAccessToken={env.VITE_MAPBOX_TOKEN}
         attributionControl={false}
         interactiveLayerIds={interactiveLayerIds}
@@ -178,15 +186,50 @@ function App() {
           longitude={viewState.longitude}
           anchor='center'
         >
-          <MdMyLocation size={20} />
+          <MdMyLocation
+            size={20}
+            color={baseMap === 'light' ? 'black' : 'white'}
+          />
         </Marker>
         <LayerToggles
-          isOpen={isLayerListOpen}
-          setIsOpen={setIsLayerListOpen}
+          isOpen={currentlyOpenPane === 'layers'}
+          setIsOpen={(isOpen) => setCurrentlyOpenPane(isOpen ? 'layers' : null)}
           visibleLayers={visibleLayers}
           setVisibleLayers={setVisibleLayers}
         />
-        {hoverInfo && !isLayerListOpen && <HoverInfo feature={hoverInfo} />}
+        <Pane isOpen={currentlyOpenPane === 'settings'}>
+          <h2>הגדרות</h2>
+          <button onClick={() => setBaseMap('light')}>בהיר</button>
+          <button onClick={() => setBaseMap('dark')}>כהה</button>
+        </Pane>
+        <Pane isOpen={currentlyOpenPane === 'about'}>
+          <h2>אודות</h2>
+          <p>האתר הזה נבנה על ידי דן פישגולד.</p>
+          <p>
+            המפה וחלק מהמידע שמוצג עליה מגיע מ{' '}
+            <a href='https://openstreetmap.org'>Open Street Map</a> (ומ Mapbox).
+          </p>
+          <p>
+            כמעט כל המידע שמופיע על המפה מגיע מ
+            <a href='https://www.google.com/maps/d/viewer?mid=1X14aSd2dYmTnBfy6UDmumcvshcw'>
+              מפת שבילי האופניים של דרור רשף
+            </a>{' '}
+            ואני צריך לוודא איתו שהוא סבבה עם האתר הזה ועם הקרדיט הזה.
+          </p>
+          <p>תודה לכל האנשים שהקדישו מזמנם ליצירת ועדכון וטיפוח המידע הזה!</p>
+          <p>
+            קוד המקור של האתר זמין ב
+            <a href='https://github.com/danfishgold/bike-map'>גיטהאב</a>. אתם
+            מוזמנים לנבור או לתקן באגים או להציע הצעות!
+          </p>
+          <p>
+            אם יש לכם שאלות או בקשות ויש לכם את מספר הטלפון שלי צרו איתי קשר
+            בוואטסאפ. אם אין לכם את מספר הטלפון שלי צרו איתי קשר בטוויטר. אם אין
+            לכם טוויטר צרו איתי קשר בפייסבוק. די דיינו די דיינו.
+          </p>
+          <p style={{ textAlign: 'left' }}>באהבה, דן</p>
+        </Pane>
+        {hoverInfo && !currentlyOpenPane && <HoverInfo feature={hoverInfo} />}
       </Map>
       <ButtonBar>
         {mode === 'browse' ? (
@@ -195,7 +238,11 @@ function App() {
               label='שכבות'
               icon={MdLayers}
               color={color1}
-              onClick={() => setIsLayerListOpen(!isLayerListOpen)}
+              onClick={() =>
+                setCurrentlyOpenPane(
+                  currentlyOpenPane === 'layers' ? null : 'layers',
+                )
+              }
             />
             <ButtonBar.Button
               label='תכנון מסלול'
@@ -204,16 +251,24 @@ function App() {
               onClick={() => setMode('constructRoute')}
             />
             <ButtonBar.Button
-              label='שיתוף'
-              icon={MdOutlineIosShare}
-              color={color3}
-              onClick={() => alert('אל תשתפו את האתר הזה בינתיים בבקשה')}
-            />
-            <ButtonBar.Button
               label='הגדרות'
               icon={MdSettings}
+              color={color3}
+              onClick={() =>
+                setCurrentlyOpenPane(
+                  currentlyOpenPane === 'settings' ? null : 'settings',
+                )
+              }
+            />
+            <ButtonBar.Button
+              label='אודות'
+              icon={MdInfoOutline}
               color={color4}
-              onClick={() => alert('עוד אין')}
+              onClick={() =>
+                setCurrentlyOpenPane(
+                  currentlyOpenPane === 'about' ? null : 'about',
+                )
+              }
             />
           </>
         ) : mode === 'constructRoute' ? (
@@ -259,15 +314,21 @@ function App() {
               }}
             />
             <ButtonBar.Button
-              label='עריכת מסלול'
+              label='עריכת המסלול'
               icon={MdEdit}
               color={color2}
               onClick={() => setMode('constructRoute')}
             />
             <ButtonBar.Button
+              label='מידע נוסף'
+              icon={MdInfoOutline}
+              color={color3}
+              onClick={() => alert('בסופו של דבר')}
+            />
+            <ButtonBar.Button
               label='שיתוף'
               icon={MdOutlineIosShare}
-              color={color3}
+              color={color4}
               onClick={() => alert('בסופו של דבר')}
             />
           </>
@@ -435,4 +496,32 @@ function featureAtPosition({
     layers: interactiveLayerIds,
   })
   return features[0] ?? null
+}
+
+function Pane({ isOpen, children }: PropsWithChildren<{ isOpen: boolean }>) {
+  if (!isOpen) {
+    return null
+  }
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: '10px',
+        left: '10px',
+        right: '10px',
+        background: 'white',
+        padding: '10px',
+        border: '1px solid black',
+        zIndex: 2,
+        direction: 'rtl',
+        fontSize: '1.1rem',
+        lineHeight: 1.25,
+        maxHeight: 'calc(100% - 40px)',
+        overflowY: 'scroll',
+      }}
+    >
+      {children}
+    </div>
+  )
 }
