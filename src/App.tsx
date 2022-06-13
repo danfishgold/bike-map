@@ -48,6 +48,7 @@ function App() {
     'settings' | 'layers' | 'about' | null
   >(null)
   const [baseMap, setBaseMap] = useState<'light' | 'dark'>('light')
+  const [isDebugging, setIsDebugging] = useState(false)
   const [visibleLayers, setVisibleLayers] = useState(
     new Set<FeatureGroup | 'osmBikePaths'>([
       'osmBikePaths',
@@ -71,6 +72,9 @@ function App() {
   )
   const route = useRoute(viewState, mode === 'constructRoute')
 
+  const hoverInfoZoomThreshold = isDebugging ? 0 : 13
+  const HoverInfoComponent = isDebugging ? HoverInfo.Debug : HoverInfo
+
   const interactiveLayerIds = featureGroups
     .filter((group) => visibleLayers.has(group))
     .filter((group) => group !== 'roadArrow')
@@ -90,7 +94,7 @@ function App() {
           setViewState(event.viewState)
           const { latitude, longitude, zoom } = event.viewState
           const newHoverInfo =
-            zoom > 13
+            zoom > hoverInfoZoomThreshold
               ? featureAtPosition({
                   map: event.target,
                   position: [longitude, latitude],
@@ -201,6 +205,15 @@ function App() {
           <h2>הגדרות</h2>
           <button onClick={() => setBaseMap('light')}>בהיר</button>
           <button onClick={() => setBaseMap('dark')}>כהה</button>
+          <input
+            type='checkbox'
+            checked={isDebugging}
+            onChange={(event) => setIsDebugging(event.target.checked)}
+            id='settings__is-debugging-checkbox'
+          />
+          <label htmlFor='settings__is-debugging-checkbox'>
+            מצב דיבוג (אם אתם לא דן אז לא כדאי)
+          </label>
         </Pane>
         <Pane isOpen={currentlyOpenPane === 'about'}>
           <h2>אודות</h2>
@@ -229,7 +242,9 @@ function App() {
           </p>
           <p style={{ textAlign: 'left' }}>באהבה, דן</p>
         </Pane>
-        {hoverInfo && !currentlyOpenPane && <HoverInfo feature={hoverInfo} />}
+        {hoverInfo && !currentlyOpenPane && (
+          <HoverInfoComponent feature={hoverInfo} />
+        )}
       </Map>
       <ButtonBar>
         {mode === 'browse' ? (

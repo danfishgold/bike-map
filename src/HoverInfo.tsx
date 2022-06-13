@@ -61,10 +61,8 @@ function FeatureTag({ feature }: { feature: mapboxgl.MapboxGeoJSONFeature }) {
 
 function DebugHoverInfo({
   feature,
-  onHide,
 }: {
   feature: mapboxgl.MapboxGeoJSONFeature
-  onHide: () => void
 }) {
   const properties = feature.properties ?? {}
   const keysToShow = [
@@ -109,7 +107,7 @@ function DebugHoverInfo({
         )}
         {otherKeys.length > 0 && <li>{otherKeys.join(', ')}</li>}
       </ul>
-      <button onClick={onHide}>hide</button>
+      <button onClick={() => console.log({ feature })}>לוג</button>
     </div>
   )
 }
