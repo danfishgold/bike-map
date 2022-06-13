@@ -10,15 +10,15 @@ import { toggleSetMember } from './utils'
 export function LayerToggles({
   isOpen,
   setIsOpen,
-  visibleLayers: visibleFeatures,
-  setVisibleLayers: setVisibleFeatures,
+  inDarkMode,
+  visibleLayers,
+  setVisibleLayers,
 }: {
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
+  inDarkMode: boolean
   visibleLayers: Set<FeatureGroup | 'osmBikePaths'>
-  setVisibleLayers: (
-    visibleFeatures: Set<FeatureGroup | 'osmBikePaths'>,
-  ) => void
+  setVisibleLayers: (visibleLayers: Set<FeatureGroup | 'osmBikePaths'>) => void
 }) {
   return (
     <Pane
@@ -28,6 +28,7 @@ export function LayerToggles({
         left: '10px',
         maxHeight: 'calc(100% - 40px)',
       }}
+      inDarkMode={inDarkMode}
     >
       <button onClick={() => setIsOpen(false)}>
         <MdClose />
@@ -38,10 +39,10 @@ export function LayerToggles({
           <input
             id={`layer-toggle-${group}`}
             type='checkbox'
-            checked={visibleFeatures.has(group)}
+            checked={visibleLayers.has(group)}
             onChange={(event) =>
-              setVisibleFeatures(
-                toggleSetMember(visibleFeatures, group, event.target.checked),
+              setVisibleLayers(
+                toggleSetMember(visibleLayers, group, event.target.checked),
               )
             }
           />

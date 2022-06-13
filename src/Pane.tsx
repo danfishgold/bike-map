@@ -3,8 +3,13 @@ import { PropsWithChildren } from 'react'
 export function Pane({
   isOpen,
   style,
+  inDarkMode,
   children,
-}: PropsWithChildren<{ isOpen: boolean; style?: React.CSSProperties }>) {
+}: PropsWithChildren<{
+  isOpen: boolean
+  style?: React.CSSProperties
+  inDarkMode: boolean
+}>) {
   if (!isOpen) {
     return null
   }
@@ -13,7 +18,8 @@ export function Pane({
     <div
       style={{
         position: 'absolute',
-        background: 'white',
+        color: inDarkMode ? 'white' : 'black',
+        background: inDarkMode ? '#222' : 'white',
         padding: '10px',
         border: '1px solid black',
         borderRadius: '4px',

@@ -76,6 +76,11 @@ function App() {
   const hoverInfoZoomThreshold = isDebugging ? 0 : 13
   const HoverInfoComponent = isDebugging ? HoverInfo.Debug : HoverInfo
 
+  const color1 = baseMap === 'light' ? '#f0f9ff' : '#0c4a6e'
+  const color2 = baseMap === 'light' ? '#e0f2fe' : '#075985'
+  const color3 = baseMap === 'light' ? '#bae6fd' : '#0369a1'
+  const color4 = baseMap === 'light' ? '#7dd3fc' : '#0284c7'
+
   const interactiveLayerIds = featureGroups
     .filter((group) => visibleLayers.has(group))
     .filter((group) => group !== 'roadArrow')
@@ -201,6 +206,7 @@ function App() {
           setIsOpen={(isOpen) => setCurrentlyOpenPane(isOpen ? 'layers' : null)}
           visibleLayers={visibleLayers}
           setVisibleLayers={setVisibleLayers}
+          inDarkMode={baseMap === 'dark'}
         />
         <Pane
           isOpen={currentlyOpenPane === 'settings'}
@@ -210,6 +216,7 @@ function App() {
             right: '10px',
             maxHeight: 'calc(100% - 40px)',
           }}
+          inDarkMode={baseMap === 'dark'}
         >
           <h2>הגדרות</h2>
           <div>
@@ -236,6 +243,7 @@ function App() {
             right: '10px',
             maxHeight: 'calc(100% - 40px)',
           }}
+          inDarkMode={baseMap === 'dark'}
         >
           <h2>אודות</h2>
           <p>האתר הזה נבנה על ידי דן פישגולד.</p>
@@ -264,7 +272,10 @@ function App() {
           <p style={{ textAlign: 'left' }}>באהבה, דן</p>
         </Pane>
         {hoverInfo && !currentlyOpenPane && (
-          <HoverInfoComponent feature={hoverInfo} />
+          <HoverInfoComponent
+            feature={hoverInfo}
+            inDarkMode={baseMap === 'dark'}
+          />
         )}
       </Map>
       <ButtonBar>
@@ -501,11 +512,6 @@ async function fetchRoute(origin: Point, destination: Point) {
   const feature = { type: 'Feature', ...data.routes[0] }
   return feature
 }
-
-const color1 = '#f0f9ff'
-const color2 = '#e0f2fe'
-const color3 = '#bae6fd'
-const color4 = '#7dd3fc'
 
 function pointFeature(point: Point | Position): Feature<GeoJsonPoint> {
   const coordinates = Array.isArray(point)
