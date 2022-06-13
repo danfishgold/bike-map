@@ -79,6 +79,7 @@ function DebugHoverInfo({
     'fill',
     'fill-opacity',
     'icon',
+    'סוג צומת',
   ]
   const otherKeys = Object.keys(properties).filter(
     (key) => !keysToShow.includes(key),

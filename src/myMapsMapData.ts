@@ -16,6 +16,7 @@ type MyMapsProperties = {
   'stroke-opacity': number
   סוג?: string
   status?: string
+  icon?: string
 }
 
 const lineGroups = [
@@ -29,7 +30,6 @@ const lineGroups = [
   'missing',
   'dirtRoad',
   'bridge',
-  'road???',
   'unknown',
   'mistake',
 ] as const
@@ -41,7 +41,13 @@ const polygonGroups = [
   'hill',
   'calmedTrafficArea',
 ] as const
-const pointGroups = ['point'] as const
+const pointGroups = [
+  'junction',
+  'calmedJunction',
+  'blockedPath',
+  'trainStation',
+  'generalNote',
+] as const
 
 type LineGroup = typeof lineGroups[number]
 type PolygonGroup = typeof polygonGroups[number]
@@ -138,8 +144,6 @@ function parseLineGroup(
     return 'bridge'
   } else if (סוג?.trim() === 'דרך עפר' || סוג?.trim() === 'שביל עפר') {
     return 'missing'
-  } else if (סוג?.trim() === 'דרך') {
-    return 'road???'
   } else if (stroke === '#3f5ba9') {
     return 'bikePath'
   } else if (name.trim() === 'קו 121') {
@@ -168,23 +172,37 @@ function parsePolygonGroup(
 function parsePointGroup(
   feature: Feature<Geometry, MyMapsProperties>,
 ): PointGroup {
-  return 'point'
+  if (
+    feature.properties.icon ===
+    'https://www.gstatic.com/mapspro/images/stock/962-wht-diamond-blank.png'
+  ) {
+    return 'junction'
+  } else if (
+    feature.properties.icon ===
+    'https://www.gstatic.com/mapspro/images/stock/1269-poi-hospital-cross.png'
+  ) {
+    return 'calmedJunction'
+  } else if (
+    feature.properties.icon ===
+    'https://www.gstatic.com/mapspro/images/stock/1145-crisis-explosion.png'
+  ) {
+    return 'blockedPath'
+  } else if (
+    feature.properties.icon ===
+    'https://www.gstatic.com/mapspro/images/stock/1459-trans-train.png'
+  ) {
+    return 'trainStation'
+  } else {
+    return 'generalNote'
+  }
 }
 
 export function featureGroupLayerType(
   featureGroup: FeatureGroup,
 ): 'line' | 'point' | 'polygon' {
-  if (featureGroup === 'point') {
+  if (pointGroups.includes(featureGroup as any)) {
     return 'point'
-  } else if (
-    [
-      'unknownPolygon',
-      'trainStationIsochrone',
-      'coveredArea',
-      'hill',
-      'calmedTrafficArea',
-    ].includes(featureGroup)
-  ) {
+  } else if (polygonGroups.includes(featureGroup as any)) {
     return 'polygon'
   } else {
     return 'line'
@@ -213,8 +231,6 @@ export function featureGroupSingularDisplayName(layer: FeatureGroup): string {
       return 'שביל עפר'
     case 'bridge':
       return 'גשר'
-    case 'road???':
-      return '???'
     case 'unknown':
       return '???'
     case 'mistake':
@@ -229,15 +245,23 @@ export function featureGroupSingularDisplayName(layer: FeatureGroup): string {
       return 'גבעה'
     case 'calmedTrafficArea':
       return 'איזור מיתון תנועה'
-    case 'point':
-      return 'נקודה'
+    case 'junction':
+      return 'צומת'
+    case 'calmedJunction':
+      return 'צומת עם מיתון תנועה'
+    case 'blockedPath':
+      return 'דרך חסומה'
+    case 'trainStation':
+      return 'תחנת רכבת'
+    case 'generalNote':
+      return 'הערה כללית'
   }
 }
 
 export function featureGroupPluralDisplayName(layer: FeatureGroup): string {
   switch (layer) {
     case 'bikePath':
-      return 'שבילים'
+      return 'שבילי אופניים'
     case 'recommendedRoad':
       return 'מסלולים חלופיים'
     case 'roadArrow':
@@ -256,8 +280,6 @@ export function featureGroupPluralDisplayName(layer: FeatureGroup): string {
       return 'שבילי עפר'
     case 'bridge':
       return 'גשרים'
-    case 'road???':
-      return '???'
     case 'unknown':
       return '???'
     case 'mistake':
@@ -272,7 +294,15 @@ export function featureGroupPluralDisplayName(layer: FeatureGroup): string {
       return 'גבעות'
     case 'calmedTrafficArea':
       return 'איזורי מיתון תנועה'
-    case 'point':
-      return 'נקודות'
+    case 'junction':
+      return 'צמתים'
+    case 'calmedJunction':
+      return 'צמתים עם מיתון תנועה'
+    case 'blockedPath':
+      return 'דרכים חסומות'
+    case 'trainStation':
+      return 'תחנות רכבת'
+    case 'generalNote':
+      return 'הערות כלליות'
   }
 }
