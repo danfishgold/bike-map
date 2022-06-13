@@ -148,10 +148,20 @@ function App() {
           <Layer
             filter={['==', ['geometry-type'], 'LineString']}
             type='line'
+            id='route-border'
+            paint={{
+              'line-color': '#218531',
+              'line-width': 16,
+            }}
+            layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+          />
+          <Layer
+            filter={['==', ['geometry-type'], 'LineString']}
+            type='line'
             id='route-lines'
             paint={{
-              'line-color': 'green',
-              'line-width': 14,
+              'line-color': '#2bbd43',
+              'line-width': 12,
             }}
             layout={{ 'line-cap': 'round', 'line-join': 'round' }}
           />
