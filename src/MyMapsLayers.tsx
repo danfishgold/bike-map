@@ -3,9 +3,11 @@ import { Layer } from 'react-map-gl'
 import { FeatureGroup, featureGroupLayerType } from './myMapsMapData'
 
 export function MyMapsLayers({
+  firstSymbolLayer,
   group,
   source,
 }: {
+  firstSymbolLayer: string | undefined
   group: FeatureGroup
   source?: string | mapboxgl.AnySourceData
 }): ReactElement {
@@ -14,6 +16,7 @@ export function MyMapsLayers({
       return (
         <>
           <Layer
+            beforeId={firstSymbolLayer}
             type='line'
             id={`my-maps-${group}`}
             source={source}
@@ -32,6 +35,7 @@ export function MyMapsLayers({
           />
           {group !== 'roadArrow' && (
             <Layer
+              beforeId={firstSymbolLayer}
               type='line'
               id={`my-maps-target-${group}`}
               source={source}
@@ -48,6 +52,7 @@ export function MyMapsLayers({
     case 'point': {
       return (
         <Layer
+          beforeId={firstSymbolLayer}
           type='circle'
           id={`my-maps-target-${group}`}
           source={source}
@@ -59,6 +64,7 @@ export function MyMapsLayers({
       return (
         <>
           <Layer
+            beforeId={firstSymbolLayer}
             type='fill'
             id={`my-maps-target-${group}`}
             source={source}

@@ -73,6 +73,9 @@ function App() {
   const [mode, setMode] = useState<'browse' | 'constructRoute' | 'viewRoute'>(
     'browse',
   )
+  const [firstSymbolLayer, setFirstSymbolLayer] = useState<string | undefined>(
+    undefined,
+  )
   const route = useRoute(viewState, mode === 'constructRoute')
 
   const hoverInfoZoomThreshold = isDebugging ? 0 : 13
@@ -133,6 +136,18 @@ function App() {
           (event.target.getCanvas().style.cursor = 'pointer')
         }
         onMouseLeave={(event) => (event.target.getCanvas().style.cursor = '')}
+        onLoad={(event) => {
+          const layers = event.target.getStyle().layers
+          // Find the index of the first symbol layer in the map style.
+          let firstSymbolId
+          for (const layer of layers) {
+            if (layer.type === 'symbol') {
+              firstSymbolId = layer.id
+              break
+            }
+          }
+          setFirstSymbolLayer(firstSymbolId)
+        }}
       >
         <ScaleControl />
         <NavigationControl />
@@ -146,12 +161,13 @@ function App() {
               type='geojson'
               data={myMapsFeatures?.get(group) ?? emptyFeatureGroup}
             >
-              <MyMapsLayers group={group} />
+              <MyMapsLayers group={group} firstSymbolLayer={firstSymbolLayer} />
             </Source>
           ))}
         {osmFeatures && visibleLayers.has('osmBikePaths') && (
           <Source type='geojson' data={osmFeatures}>
             <Layer
+              beforeId={firstSymbolLayer}
               type='line'
               id='all-osm-lines'
               paint={{
@@ -166,6 +182,7 @@ function App() {
         )}
         <Source type='geojson' data={route.features}>
           <Layer
+            beforeId={firstSymbolLayer}
             filter={['==', ['geometry-type'], 'LineString']}
             type='line'
             id='route-border'
@@ -176,6 +193,7 @@ function App() {
             layout={{ 'line-cap': 'round', 'line-join': 'round' }}
           />
           <Layer
+            beforeId={firstSymbolLayer}
             filter={['==', ['geometry-type'], 'LineString']}
             type='line'
             id='route-lines'
@@ -186,6 +204,7 @@ function App() {
             layout={{ 'line-cap': 'round', 'line-join': 'round' }}
           />
           <Layer
+            beforeId={firstSymbolLayer}
             filter={['==', ['geometry-type'], 'Point']}
             type='circle'
             id='route-points'
