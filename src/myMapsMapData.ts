@@ -29,6 +29,7 @@ const lineGroups = [
   'inProgress',
   'missing',
   'dirtRoad',
+  'dirtPath',
   'bridge',
   'unknown',
   'mistake',
@@ -142,8 +143,10 @@ function parseLineGroup(
     return 'missing'
   } else if (stroke === '#7c3592') {
     return 'bridge'
-  } else if (סוג?.trim() === 'דרך עפר' || סוג?.trim() === 'שביל עפר') {
-    return 'missing'
+  } else if (סוג?.trim() === 'דרך עפר') {
+    return 'dirtRoad'
+  } else if (סוג?.trim() === 'שביל עפר') {
+    return 'dirtPath'
   } else if (stroke === '#3f5ba9') {
     return 'bikePath'
   } else if (name.trim() === 'קו 121') {
@@ -228,6 +231,8 @@ export function featureGroupSingularDisplayName(layer: FeatureGroup): string {
     case 'missing':
       return 'שביל חסר'
     case 'dirtRoad':
+      return 'דרך עפר'
+    case 'dirtPath':
       return 'שביל עפר'
     case 'bridge':
       return 'גשר'
@@ -277,6 +282,8 @@ export function featureGroupPluralDisplayName(layer: FeatureGroup): string {
     case 'missing':
       return 'שבילים חסרים'
     case 'dirtRoad':
+      return 'דרכי עפר'
+    case 'dirtPath':
       return 'שבילי עפר'
     case 'bridge':
       return 'גשרים'
