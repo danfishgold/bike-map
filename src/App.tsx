@@ -31,6 +31,8 @@ import Map, {
   ScaleControl,
   Source,
 } from 'react-map-gl'
+import darkMode from './assets/darkMode.png'
+import lightMode from './assets/lightMode.png'
 import ButtonBar from './ButtonBar'
 import { env } from './env'
 import { HoverInfo } from './HoverInfo'
@@ -219,9 +221,25 @@ function App() {
           inDarkMode={baseMap === 'dark'}
         >
           <h2>הגדרות</h2>
-          <div>
-            <button onClick={() => setBaseMap('light')}>בהיר</button>
-            <button onClick={() => setBaseMap('dark')}>כהה</button>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'auto auto 1fr',
+              gap: '20px',
+            }}
+          >
+            <LightDarkModeToggleButton
+              onClick={() => setBaseMap('light')}
+              imageSource={lightMode}
+              label='בהיר'
+              isSelected={baseMap === 'light'}
+            />
+            <LightDarkModeToggleButton
+              onClick={() => setBaseMap('dark')}
+              imageSource={darkMode}
+              label='כהה'
+              isSelected={baseMap === 'dark'}
+            />
           </div>
           <div>
             <input
@@ -538,4 +556,44 @@ function featureAtPosition({
     layers: interactiveLayerIds,
   })
   return features[0] ?? null
+}
+
+function LightDarkModeToggleButton({
+  onClick,
+  label,
+  imageSource,
+  isSelected,
+}: {
+  onClick: () => void
+  label: string
+  imageSource: string
+  isSelected: boolean
+}) {
+  return (
+    <button
+      aria-selected={isSelected}
+      onClick={onClick}
+      style={{
+        padding: 0,
+        outline: 0,
+        border: 0,
+        margin: 0,
+        background: 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      }}
+    >
+      <img
+        style={{
+          width: '80px',
+          borderRadius: '8px',
+          border: isSelected ? '2px solid #0284c7' : 0,
+          boxSizing: 'border-box',
+        }}
+        src={imageSource}
+      />
+      <span style={{ fontWeight: isSelected ? 900 : 400 }}>{label}</span>
+    </button>
+  )
 }
