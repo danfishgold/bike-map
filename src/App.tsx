@@ -188,7 +188,7 @@ function App() {
             id='route-border'
             paint={{
               'line-color': '#218531',
-              'line-width': 16,
+              'line-width': 12,
             }}
             layout={{ 'line-cap': 'round', 'line-join': 'round' }}
           />
@@ -199,7 +199,7 @@ function App() {
             id='route-lines'
             paint={{
               'line-color': '#2bbd43',
-              'line-width': 12,
+              'line-width': 8,
             }}
             layout={{ 'line-cap': 'round', 'line-join': 'round' }}
           />
@@ -208,7 +208,7 @@ function App() {
             filter={['==', ['geometry-type'], 'Point']}
             type='circle'
             id='route-points'
-            paint={{ 'circle-radius': 4, 'circle-color': 'white' }}
+            paint={{ 'circle-radius': 3, 'circle-color': 'white' }}
           />
         </Source>
 
