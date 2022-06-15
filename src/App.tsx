@@ -154,7 +154,9 @@ function App() {
         <ScaleControl />
         <NavigationControl />
         <GeolocateControl />
-        <AttributionControl customAttribution={[]} />
+        <AttributionControl
+          customAttribution={['© המפה הציבורית לשבילי אופניים']}
+        />
         <Source id='my-maps-features' type='geojson' data={myMapsFeatures}>
           <Layer
             beforeId={firstSymbolLayer}
@@ -378,9 +380,9 @@ function App() {
           <p>
             כמעט כל המידע שמופיע על המפה מגיע מ
             <a href='https://www.google.com/maps/d/viewer?mid=1X14aSd2dYmTnBfy6UDmumcvshcw'>
-              מפת שבילי האופניים של דרור רשף
-            </a>{' '}
-            ואני צריך לוודא איתו שהוא סבבה עם האתר הזה ועם הקרדיט הזה.
+              המפה הציבורית לשבילי אופניים
+            </a>
+            .
           </p>
           <p>תודה לכל האנשים שהקדישו מזמנם ליצירת ועדכון וטיפוח המידע הזה!</p>
           <p>
