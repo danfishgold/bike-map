@@ -1,24 +1,7 @@
 import { FeatureCollection, Geometry } from 'geojson'
 import { useEffect, useRef, useState } from 'react'
 
-export function groupBy<K, T>(
-  list: T[],
-  keyGetter: (key: T) => K,
-): Map<K, T[]> {
-  const map = new Map<K, T[]>()
-  list.forEach((item) => {
-    const key = keyGetter(item)
-    const collection = map.get(key)
-    if (!collection) {
-      map.set(key, [item])
-    } else {
-      collection.push(item)
-    }
-  })
-  return map
-}
-
-export const emptyFeatureGroup: FeatureCollection<Geometry> = {
+export const emptyFeatureGroup: FeatureCollection<Geometry, any> = {
   type: 'FeatureCollection',
   features: [],
 }

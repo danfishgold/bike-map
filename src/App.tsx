@@ -37,8 +37,7 @@ import ButtonBar from './ButtonBar'
 import { env } from './env'
 import { HoverInfo } from './HoverInfo'
 import { LayerToggles } from './LayerToggles'
-import { MyMapsLayers } from './MyMapsLayers'
-import { FeatureGroup, featureGroups } from './myMapsMapData'
+import { FeatureGroup } from './myMapsMapData'
 import { Pane } from './Pane'
 import { useMapFeatures } from './useMapFeatures'
 import { compact, emptyFeatureGroup, useThrottledValue } from './utils'
@@ -52,13 +51,15 @@ function App() {
   >(null)
   const [baseMap, setBaseMap] = useState<'light' | 'dark'>('light')
   const [isDebugging, setIsDebugging] = useState(false)
-  const [visibleLayers, setVisibleLayers] = useState(
+  const [visibleGroups, setVisibleGroups] = useState(
     new Set<FeatureGroup | 'osmBikePaths'>([
       'osmBikePaths',
       'recommendedRoad',
       'roadArrow',
       'dangerousRoad',
       'hill',
+      'calmedTrafficArea',
+      'dirtPath',
     ]),
   )
   const [hoverInfo, setHoverInfo] =
@@ -86,10 +87,11 @@ function App() {
   const color3 = baseMap === 'light' ? '#bae6fd' : '#0369a1'
   const color4 = baseMap === 'light' ? '#7dd3fc' : '#0284c7'
 
-  const interactiveLayerIds = featureGroups
-    .filter((group) => visibleLayers.has(group))
-    .filter((group) => group !== 'roadArrow')
-    .map((group) => `my-maps-target-${group}`)
+  const interactiveLayerIds = [
+    'my-maps-points',
+    'my-maps-line-targets',
+    'my-maps-polygons',
+  ]
 
   return (
     <div
@@ -153,33 +155,118 @@ function App() {
         <NavigationControl />
         <GeolocateControl />
         <AttributionControl customAttribution={[]} />
-        {featureGroups
-          .filter((group) => visibleLayers.has(group))
-          .map((group) => (
-            <Source
-              key={group}
-              type='geojson'
-              data={myMapsFeatures?.get(group) ?? emptyFeatureGroup}
-            >
-              <MyMapsLayers group={group} firstSymbolLayer={firstSymbolLayer} />
-            </Source>
-          ))}
-        {osmFeatures && visibleLayers.has('osmBikePaths') && (
-          <Source type='geojson' data={osmFeatures}>
-            <Layer
-              beforeId={firstSymbolLayer}
-              type='line'
-              id='all-osm-lines'
-              paint={{
-                'line-color': '#3f5ba9',
-                'line-width': 4,
-              }}
-              layout={{
-                'line-cap': 'round',
-              }}
-            />
-          </Source>
-        )}
+        <Source id='my-maps-features' type='geojson' data={myMapsFeatures}>
+          <Layer
+            beforeId={firstSymbolLayer}
+            type='fill'
+            id='my-maps-polygons'
+            filter={[
+              'all',
+              ['==', ['get', 'layerType'], 'polygon'],
+              [
+                'in',
+                ['get', 'featureGroup'],
+                ['literal', Array.from(visibleGroups)],
+              ],
+            ]}
+            paint={{
+              'fill-color': ['get', 'fill'],
+              'fill-opacity': [
+                'interpolate',
+                ['linear'],
+                [
+                  'case',
+                  ['boolean', ['feature-state', 'hover'], false],
+                  0.5,
+                  0,
+                ],
+                0,
+                ['get', 'fill-opacity'],
+                1,
+                1,
+              ],
+            }}
+          />
+
+          <Layer
+            id='my-maps-lines'
+            type='line'
+            filter={[
+              'all',
+              ['==', ['get', 'layerType'], 'line'],
+              [
+                'in',
+                ['get', 'featureGroup'],
+                ['literal', Array.from(visibleGroups)],
+              ],
+            ]}
+            paint={{
+              'line-color': ['get', 'stroke'],
+              'line-width': [
+                '*',
+                ['case', ['boolean', ['feature-state', 'hover'], false], 2, 1],
+                ['get', 'stroke-width'],
+              ],
+              'line-opacity': ['get', 'stroke-opacity'],
+            }}
+            layout={{
+              'line-cap': 'round',
+            }}
+          />
+          <Layer
+            beforeId={firstSymbolLayer}
+            type='line'
+            id='my-maps-line-targets'
+            filter={[
+              'all',
+              ['==', ['get', 'layerType'], 'line'],
+              [
+                'in',
+                ['get', 'featureGroup'],
+                ['literal', Array.from(visibleGroups)],
+              ],
+              ['!=', ['get', 'featureGroup'], 'roadArrow'],
+            ]}
+            paint={{
+              'line-width': 20,
+              'line-color': '#ffffff',
+              'line-opacity': 0.0001,
+            }}
+          />
+
+          <Layer
+            beforeId={firstSymbolLayer}
+            type='circle'
+            id='my-maps-points'
+            filter={[
+              'all',
+              ['==', ['get', 'layerType'], 'point'],
+              [
+                'in',
+                ['get', 'featureGroup'],
+                ['literal', Array.from(visibleGroups)],
+              ],
+            ]}
+            paint={{ 'circle-color': ['get', 'icon-color'] }}
+          />
+        </Source>
+
+        <Source type='geojson' data={osmFeatures ?? emptyFeatureGroup}>
+          <Layer
+            beforeId={firstSymbolLayer}
+            type='line'
+            id='osm-bike-paths'
+            filter={['to-boolean', visibleGroups.has('osmBikePaths')]}
+            paint={{
+              'line-color': '#3f5ba9',
+              'line-width': 4,
+            }}
+            layout={{
+              'line-cap': 'round',
+            }}
+          />
+        </Source>
+
         <Source type='geojson' data={route.features}>
           <Layer
             beforeId={firstSymbolLayer}
@@ -225,8 +312,8 @@ function App() {
         <LayerToggles
           isOpen={currentlyOpenPane === 'layers'}
           setIsOpen={(isOpen) => setCurrentlyOpenPane(isOpen ? 'layers' : null)}
-          visibleLayers={visibleLayers}
-          setVisibleLayers={setVisibleLayers}
+          visibleLayers={visibleGroups}
+          setVisibleLayers={setVisibleGroups}
           inDarkMode={baseMap === 'dark'}
         />
         <Pane

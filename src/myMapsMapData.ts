@@ -3,11 +3,10 @@ import { Feature, FeatureCollection, Geometry } from 'geojson'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { customAlphabet } from 'nanoid'
 import { env } from './env'
-import { groupBy } from './utils'
 
 const nanoid = customAlphabet('1234567890', 18)
 
-type MyMapsProperties = {
+type RawMyMapsProperties = {
   name: string
   description: string
   stroke: string
@@ -18,6 +17,13 @@ type MyMapsProperties = {
   status?: string
   icon?: string
 }
+
+export type MyMapsProperties = RawMyMapsProperties & {
+  featureGroup: FeatureGroup
+  layerType: LayerType
+}
+
+export type LayerType = 'line' | 'point' | 'polygon'
 
 const lineGroups = [
   'bikePath',
@@ -62,26 +68,6 @@ export const featureGroups: FeatureGroup[] = [
 ]
 
 export async function fetchMyMapsFeatures(): Promise<
-  Map<FeatureGroup, FeatureCollection<Geometry, MyMapsProperties>>
-> {
-  const allFeatures = await fetchAllFeatures()
-  const groupFeatures = groupBy(allFeatures.features, parseFeatureGroup)
-
-  return new Map(
-    Array.from(groupFeatures.entries()).map(([group, features]) => [
-      group,
-      {
-        type: 'FeatureCollection',
-        features: features.map((feature) => ({
-          ...feature,
-          properties: { ...feature.properties, featureGroup: group },
-        })),
-      },
-    ]),
-  )
-}
-
-async function fetchAllFeatures(): Promise<
   FeatureCollection<Geometry, MyMapsProperties>
 > {
   const response = await fetch(env.VITE_KML_SOURCE)
@@ -93,19 +79,34 @@ async function fetchAllFeatures(): Promise<
     throw new Error('GeoJSON has null geometry')
   }
 
-  const featuresButWithIds = geoJson.features.map((feature) => ({
-    ...feature,
-    id: parseInt(nanoid()),
-  }))
-
-  return { ...geoJson, features: featuresButWithIds } as FeatureCollection<
+  const goodGeoJson = geoJson as FeatureCollection<
     Geometry,
-    MyMapsProperties
+    RawMyMapsProperties
   >
+
+  const featuresButWithIdsAndGroups = goodGeoJson.features.map((feature) => {
+    const featureGroup = parseFeatureGroup(feature)
+    const layerType = featureGroupLayerType(featureGroup)
+    const properties: MyMapsProperties = {
+      ...feature.properties,
+      featureGroup,
+      layerType,
+    }
+    return {
+      ...feature,
+      id: parseInt(nanoid()),
+      properties,
+    }
+  })
+
+  return {
+    ...goodGeoJson,
+    features: featuresButWithIdsAndGroups,
+  }
 }
 
 function parseFeatureGroup(
-  feature: Feature<Geometry, MyMapsProperties>,
+  feature: Feature<Geometry, RawMyMapsProperties>,
 ): FeatureGroup {
   if (feature.geometry.type === 'LineString') {
     return parseLineGroup(feature)
@@ -122,7 +123,7 @@ function parseFeatureGroup(
 }
 
 function parseLineGroup(
-  feature: Feature<Geometry, MyMapsProperties>,
+  feature: Feature<Geometry, RawMyMapsProperties>,
 ): LineGroup {
   const { name, stroke, status, סוג } = feature.properties
   if (stroke === '#ff5252') {
@@ -157,7 +158,7 @@ function parseLineGroup(
 }
 
 function parsePolygonGroup(
-  feature: Feature<Geometry, MyMapsProperties>,
+  feature: Feature<Geometry, RawMyMapsProperties>,
 ): PolygonGroup {
   if (feature.properties.name.includes('דקות רכיבה מ')) {
     return 'trainStationIsochrone'
@@ -173,7 +174,7 @@ function parsePolygonGroup(
 }
 
 function parsePointGroup(
-  feature: Feature<Geometry, MyMapsProperties>,
+  feature: Feature<Geometry, RawMyMapsProperties>,
 ): PointGroup {
   if (
     feature.properties.icon ===
@@ -200,9 +201,7 @@ function parsePointGroup(
   }
 }
 
-export function featureGroupLayerType(
-  featureGroup: FeatureGroup,
-): 'line' | 'point' | 'polygon' {
+export function featureGroupLayerType(featureGroup: FeatureGroup): LayerType {
   if (pointGroups.includes(featureGroup as any)) {
     return 'point'
   } else if (polygonGroups.includes(featureGroup as any)) {
