@@ -1,5 +1,5 @@
 import { FeatureCollection, Geometry } from 'geojson'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export function groupBy<K, T>(
   list: T[],
@@ -37,34 +37,24 @@ export function toggleSetMember<T>(
   return newSet
 }
 
-export function useThrottledFunction<Args>(
-  func: (...args: Args[]) => void,
-  timeFrame: number,
-) {
-  const funcRef = useRef(func)
+export function useThrottledValue<T>(value: T, timeout: number): T {
+  const [throttledValue, setThrottledValue] = useState(value)
+  const lastTimeRef = useRef(0)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   useEffect(() => {
-    funcRef.current = func
-  }, [func])
-  const throttledFunction = useMemo(
-    () => throttle((...args: Args[]) => funcRef.current(...args), timeFrame),
-    [funcRef],
-  )
-
-  return throttledFunction
-}
-
-export function throttle<Args>(
-  func: (...args: Args[]) => void,
-  timeFrame: number,
-): (...args: Args[]) => void {
-  let lastTime = 0
-  return (...args: Args[]) => {
-    const now = new Date().getTime()
-    if (now - lastTime >= timeFrame) {
-      func(...args)
-      lastTime = now
+    if (timeoutRef.current !== null) {
+      clearTimeout(timeoutRef.current)
     }
-  }
+    const now = new Date().getTime()
+    if (now - lastTimeRef.current >= timeout) {
+      setThrottledValue(value)
+      lastTimeRef.current = now
+    } else {
+      timeoutRef.current = setTimeout(() => setThrottledValue(value), timeout)
+    }
+  }, [value])
+
+  return throttledValue
 }
 
 let rgbCache = new Map<string, [number, number, number]>()

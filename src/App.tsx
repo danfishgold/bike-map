@@ -41,7 +41,7 @@ import { MyMapsLayers } from './MyMapsLayers'
 import { FeatureGroup, featureGroups } from './myMapsMapData'
 import { Pane } from './Pane'
 import { useMapFeatures } from './useMapFeatures'
-import { compact, emptyFeatureGroup, useThrottledFunction } from './utils'
+import { compact, emptyFeatureGroup, useThrottledValue } from './utils'
 
 type Point = { latitude: number; longitude: number }
 
@@ -438,18 +438,9 @@ type PartialSegment = {
 
 function useRoute(center: Point, isTracking: boolean) {
   const [segment, setSegment] = useState<PartialSegment | null>(null)
+  const throttledCenter = useThrottledValue(center, 250)
 
   const [pastSegments, setPastSegments] = useState<Segment[]>([])
-
-  const throttledFetchSegment = useThrottledFunction(
-    (origin: Point, destination: Point) => {
-      console.log('calculating')
-      fetchRoute(origin, destination).then((feature) =>
-        setSegment({ origin, destination, feature }),
-      )
-    },
-    250,
-  )
 
   useEffect(() => {
     if (!isTracking) {
@@ -459,8 +450,15 @@ function useRoute(center: Point, isTracking: boolean) {
       return
     }
 
-    throttledFetchSegment(segment.origin, center)
-  }, [center, segment?.origin, isTracking])
+    console.log('calculating')
+    fetchRoute(segment.origin, throttledCenter).then((feature) =>
+      setSegment({
+        origin: segment.origin,
+        destination: throttledCenter,
+        feature,
+      }),
+    )
+  }, [throttledCenter, segment?.origin, isTracking])
 
   // useEffect(() => {
   //   if (isTracking) {
