@@ -23,6 +23,26 @@ body {
   flex-direction: column;
 }
 
+:root {
+  --blue-1: #f0f9ff;
+  --blue-2: #e0f2fe;
+  --blue-3: #bae6fd;
+  --blue-4: #7dd3fc;
+  --panel-background: white;
+  --panel-border: black;
+  --text-color: black;
+}
+
+.app-container.dark {
+  --blue-1: #0c4a6e;
+  --blue-2: #075985;
+  --blue-3: #0369a1;
+  --blue-4: #0284c7;
+  --panel-background: #222;
+  --panel-border: black;
+  --text-color: white;
+}
+
 #root {
   display: flex;
   flex-direction: column;

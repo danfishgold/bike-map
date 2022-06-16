@@ -10,13 +10,11 @@ import { toggleSetMember } from './utils'
 export function LayerToggles({
   isOpen,
   setIsOpen,
-  inDarkMode,
   visibleLayers,
   setVisibleLayers,
 }: {
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
-  inDarkMode: boolean
   visibleLayers: Set<FeatureGroup | 'osmBikePaths'>
   setVisibleLayers: (visibleLayers: Set<FeatureGroup | 'osmBikePaths'>) => void
 }) {
@@ -28,7 +26,6 @@ export function LayerToggles({
         left: '10px',
         maxHeight: 'calc(100% - 40px)',
       }}
-      inDarkMode={inDarkMode}
     >
       <button onClick={() => setIsOpen(false)}>
         <MdClose />

@@ -4,10 +4,8 @@ import { rgbValuesForColor, textColor } from './utils'
 
 export function HoverInfo({
   feature,
-  inDarkMode,
 }: {
   feature: mapboxgl.MapboxGeoJSONFeature
-  inDarkMode: boolean
 }) {
   const {
     name: title,
@@ -28,7 +26,6 @@ export function HoverInfo({
         right: '50px',
         left: '10px',
       }}
-      inDarkMode={inDarkMode}
     >
       <h3 style={{ margin: '0 0 5px' }}>
         {title} <FeatureTag feature={feature} />
@@ -61,10 +58,8 @@ function FeatureTag({ feature }: { feature: mapboxgl.MapboxGeoJSONFeature }) {
 
 function DebugHoverInfo({
   feature,
-  inDarkMode,
 }: {
   feature: mapboxgl.MapboxGeoJSONFeature
-  inDarkMode: boolean
 }) {
   const properties = feature.properties ?? {}
   const keysToShow = [
@@ -94,7 +89,6 @@ function DebugHoverInfo({
         right: '50px',
         left: '10px',
       }}
-      inDarkMode={inDarkMode}
     >
       <ul>
         {keysToShow.map(

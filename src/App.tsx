@@ -31,7 +31,7 @@ import Map, {
   ScaleControl,
   Source,
 } from 'react-map-gl'
-import { useMediaQuery } from 'usehooks-ts'
+import { useMediaQuery, useTernaryDarkMode } from 'usehooks-ts'
 import darkMode from './assets/darkMode.png'
 import lightMode from './assets/lightMode.png'
 import ButtonBar from './ButtonBar'
@@ -51,7 +51,6 @@ function App() {
   const [currentlyOpenPane, setCurrentlyOpenPane] = useState<
     'settings' | 'layers' | 'about' | null
   >(null)
-  const [baseMap, setBaseMap] = useState<'light' | 'dark'>('light')
   const [isDebugging, setIsDebugging] = useState(false)
   const [visibleGroups, setVisibleGroups] = useState(
     new Set<FeatureGroup | 'osmBikePaths'>([
@@ -80,14 +79,11 @@ function App() {
     undefined,
   )
   const route = useRoute(viewState, mode === 'constructRoute')
+  const { isDarkMode, ternaryDarkMode, setTernaryDarkMode } =
+    useTernaryDarkMode()
 
   const tooltipFeatureZoomThreshold = isDebugging ? 0 : 13
   const TooltipFeatureComponent = isDebugging ? HoverInfo.Debug : HoverInfo
-
-  const color1 = baseMap === 'light' ? '#f0f9ff' : '#0c4a6e'
-  const color2 = baseMap === 'light' ? '#e0f2fe' : '#075985'
-  const color3 = baseMap === 'light' ? '#bae6fd' : '#0369a1'
-  const color4 = baseMap === 'light' ? '#7dd3fc' : '#0284c7'
 
   const interactiveLayerIds = [
     'my-maps-points',
@@ -140,6 +136,7 @@ function App() {
 
   return (
     <div
+      className={`app-container ${isDarkMode ? 'dark' : ''}`}
       style={{
         flexGrow: 1,
         display: 'flex',
@@ -166,9 +163,9 @@ function App() {
         }}
         style={{ flexGrow: 1, position: 'relative' }}
         mapStyle={
-          baseMap === 'light'
-            ? 'mapbox://styles/danfishgold/cl2821j55000714m1b7zb25yd'
-            : 'mapbox://styles/danfishgold/cl4d043ck000w14p2tm2v444j'
+          isDarkMode
+            ? 'mapbox://styles/danfishgold/cl4d043ck000w14p2tm2v444j'
+            : 'mapbox://styles/danfishgold/cl2821j55000714m1b7zb25yd'
         }
         mapboxAccessToken={env.VITE_MAPBOX_TOKEN}
         attributionControl={false}
@@ -350,10 +347,7 @@ function App() {
             longitude={viewState.longitude}
             anchor='center'
           >
-            <MdMyLocation
-              size={20}
-              color={baseMap === 'light' ? 'black' : 'white'}
-            />
+            <MdMyLocation size={20} color={'var(--text-color)'} />
           </Marker>
         )}
         <LayerToggles
@@ -361,7 +355,6 @@ function App() {
           setIsOpen={(isOpen) => setCurrentlyOpenPane(isOpen ? 'layers' : null)}
           visibleLayers={visibleGroups}
           setVisibleLayers={setVisibleGroups}
-          inDarkMode={baseMap === 'dark'}
         />
         <Pane
           isOpen={currentlyOpenPane === 'settings'}
@@ -371,7 +364,6 @@ function App() {
             right: '10px',
             maxHeight: 'calc(100% - 40px)',
           }}
-          inDarkMode={baseMap === 'dark'}
         >
           <h2>הגדרות</h2>
           <div
@@ -382,17 +374,20 @@ function App() {
             }}
           >
             <LightDarkModeToggleButton
-              onClick={() => setBaseMap('light')}
+              onClick={() => setTernaryDarkMode('light')}
               imageSource={lightMode}
               label='בהיר'
-              isSelected={baseMap === 'light'}
+              isSelected={ternaryDarkMode === 'light'}
             />
             <LightDarkModeToggleButton
-              onClick={() => setBaseMap('dark')}
+              onClick={() => setTernaryDarkMode('dark')}
               imageSource={darkMode}
               label='כהה'
-              isSelected={baseMap === 'dark'}
+              isSelected={ternaryDarkMode === 'dark'}
             />
+            <button onClick={() => setTernaryDarkMode('system')}>
+              מצב מערכת
+            </button>
           </div>
           <div>
             <input
@@ -414,7 +409,6 @@ function App() {
             right: '10px',
             maxHeight: 'calc(100% - 40px)',
           }}
-          inDarkMode={baseMap === 'dark'}
         >
           <h2>אודות</h2>
           <p>האתר הזה נבנה על ידי דן פישגולד.</p>
@@ -443,10 +437,7 @@ function App() {
           <p style={{ textAlign: 'left' }}>באהבה, דן</p>
         </Pane>
         {tooltipFeature && !currentlyOpenPane && (
-          <TooltipFeatureComponent
-            feature={tooltipFeature}
-            inDarkMode={baseMap === 'dark'}
-          />
+          <TooltipFeatureComponent feature={tooltipFeature} />
         )}
       </Map>
       <ButtonBar>
@@ -455,7 +446,7 @@ function App() {
             <ButtonBar.Button
               label='שכבות'
               icon={MdLayers}
-              color={color1}
+              color='var(--blue-1)'
               onClick={() =>
                 setCurrentlyOpenPane(
                   currentlyOpenPane === 'layers' ? null : 'layers',
@@ -465,13 +456,13 @@ function App() {
             <ButtonBar.Button
               label='תכנון מסלול'
               icon={TbRoute}
-              color={color2}
+              color='var(--blue-2)'
               onClick={() => setMode('constructRoute')}
             />
             <ButtonBar.Button
               label='הגדרות'
               icon={MdSettings}
-              color={color3}
+              color='var(--blue-3)'
               onClick={() =>
                 setCurrentlyOpenPane(
                   currentlyOpenPane === 'settings' ? null : 'settings',
@@ -481,7 +472,7 @@ function App() {
             <ButtonBar.Button
               label='אודות'
               icon={MdInfoOutline}
-              color={color4}
+              color='var(--blue-4)'
               onClick={() =>
                 setCurrentlyOpenPane(
                   currentlyOpenPane === 'about' ? null : 'about',
@@ -494,7 +485,7 @@ function App() {
             <ButtonBar.Button
               label='חזרה'
               icon={MdArrowBack}
-              color={color1}
+              color='var(--blue-1)'
               onClick={() => {
                 route.clear()
                 setMode('browse')
@@ -504,19 +495,19 @@ function App() {
               disabled={!route.canRemoveStop}
               label='הסרת עצירה'
               icon={MdOutlineWrongLocation}
-              color={color2}
+              color='var(--blue-2)'
               onClick={() => route.removeStop()}
             />
             <ButtonBar.Button
               label='הוספת עצירה'
               icon={MdOutlineAddLocationAlt}
-              color={color3}
+              color='var(--blue-3)'
               onClick={() => route.addStop()}
             />
             <ButtonBar.Button
               label='סיום'
               icon={MdDone}
-              color={color4}
+              color='var(--blue-4)'
               onClick={() => setMode('viewRoute')}
             />
           </>
@@ -525,7 +516,7 @@ function App() {
             <ButtonBar.Button
               label='חזרה'
               icon={MdArrowBack}
-              color={color1}
+              color='var(--blue-1)'
               onClick={() => {
                 route.clear()
                 setMode('browse')
@@ -534,19 +525,19 @@ function App() {
             <ButtonBar.Button
               label='עריכת המסלול'
               icon={MdEdit}
-              color={color2}
+              color='var(--blue-2)'
               onClick={() => setMode('constructRoute')}
             />
             <ButtonBar.Button
               label='מידע נוסף'
               icon={MdInfoOutline}
-              color={color3}
+              color='var(--blue-3)'
               onClick={() => alert('בסופו של דבר')}
             />
             <ButtonBar.Button
               label='שיתוף'
               icon={MdOutlineIosShare}
-              color={color4}
+              color='var(--blue-4)'
               onClick={() => alert('בסופו של דבר')}
             />
           </>

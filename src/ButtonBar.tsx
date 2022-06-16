@@ -1,6 +1,5 @@
 import { PropsWithChildren } from 'react'
 import { IconType } from 'react-icons'
-import { rgbValuesForColor, textColor } from './utils'
 
 export default function ButtonBar({ children }: PropsWithChildren<{}>) {
   return (
@@ -25,8 +24,6 @@ function ButtonBarButton({
   icon: IconType
   disabled?: boolean
 }) {
-  const [r, g, b] = rgbValuesForColor(textColor(...rgbValuesForColor(color)))
-  const foregroundColor = `rgba(${r}, ${g}, ${b}, ${disabled ? 0.4 : 1})`
   return (
     <button
       disabled={disabled}
@@ -37,19 +34,25 @@ function ButtonBarButton({
         outline: 0,
         border: 0,
         background: color,
-        color: foregroundColor,
+        color: 'var(--text-color)',
         fontSize: '0.8rem',
         fontWeight: 700,
-        display: 'grid',
-        gridTemplateRows: '20px 1fr',
-        gap: '5px',
-        alignItems: 'center',
-        justifyItems: 'center',
       }}
       onClick={onClick}
     >
-      {icon({ size: '100%', color: foregroundColor })}
-      <span>{label}</span>
+      <div
+        style={{
+          opacity: disabled ? 0.4 : 1,
+          display: 'grid',
+          gridTemplateRows: '20px 1fr',
+          gap: '5px',
+          alignItems: 'center',
+          justifyItems: 'center',
+        }}
+      >
+        {icon({ size: '100%', color: 'var(--text-color)' })}
+        <span>{label}</span>
+      </div>
     </button>
   )
 }
