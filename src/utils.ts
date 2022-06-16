@@ -6,18 +6,18 @@ export const emptyFeatureGroup: FeatureCollection<Geometry, any> = {
   features: [],
 }
 
-export function toggleSetMember<T>(
-  set: Set<T>,
+export function toggleSetRecordMember<T extends string>(
+  setRecord: Partial<Record<T, true>>,
   member: T,
   include: boolean,
-): Set<T> {
-  const newSet = new Set(set)
+): Partial<Record<T, true>> {
+  const newSetRecord = { ...setRecord }
   if (include) {
-    newSet.add(member)
+    newSetRecord[member] = true
   } else {
-    newSet.delete(member)
+    delete newSetRecord[member]
   }
-  return newSet
+  return newSetRecord
 }
 
 export function useThrottledValue<T>(value: T, timeout: number): T {

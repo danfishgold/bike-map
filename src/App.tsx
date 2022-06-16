@@ -52,16 +52,20 @@ function App() {
     'settings' | 'layers' | 'about' | null
   >(null)
   const [isDebugging, setIsDebugging] = useState(false)
-  const [visibleGroups, setVisibleGroups] = useState(
-    new Set<FeatureGroup | 'osmBikePaths'>([
-      'osmBikePaths',
-      'recommendedRoad',
-      'roadArrow',
-      'dangerousRoad',
-      'hill',
-      'calmedTrafficArea',
-      'dirtPath',
-    ]),
+  const [visibleGroups, setVisibleGroups] = useLocalStorage<
+    Partial<Record<FeatureGroup | 'osmBikePath', true>>
+  >('visibleGroups', {
+    osmBikePath: true,
+    recommendedRoad: true,
+    roadArrow: true,
+    dangerousRoad: true,
+    hill: true,
+    calmedTrafficArea: true,
+    dirtPath: true,
+  })
+  const visibleGroupsArray = useMemo(
+    () => Object.keys(visibleGroups),
+    [visibleGroups],
   )
   const [tooltipFeature, setTooltipFeature] =
     useState<mapboxgl.MapboxGeoJSONFeature | null>(null)
@@ -202,11 +206,7 @@ function App() {
             filter={[
               'all',
               ['==', ['get', 'layerType'], 'polygon'],
-              [
-                'in',
-                ['get', 'featureGroup'],
-                ['literal', Array.from(visibleGroups)],
-              ],
+              ['in', ['get', 'featureGroup'], ['literal', visibleGroupsArray]],
             ]}
             paint={{
               'fill-color': ['get', 'fill'],
@@ -233,11 +233,7 @@ function App() {
             filter={[
               'all',
               ['==', ['get', 'layerType'], 'line'],
-              [
-                'in',
-                ['get', 'featureGroup'],
-                ['literal', Array.from(visibleGroups)],
-              ],
+              ['in', ['get', 'featureGroup'], ['literal', visibleGroupsArray]],
             ]}
             paint={{
               'line-color': ['get', 'stroke'],
@@ -264,11 +260,7 @@ function App() {
             filter={[
               'all',
               ['==', ['get', 'layerType'], 'line'],
-              [
-                'in',
-                ['get', 'featureGroup'],
-                ['literal', Array.from(visibleGroups)],
-              ],
+              ['in', ['get', 'featureGroup'], ['literal', visibleGroupsArray]],
               ['!=', ['get', 'featureGroup'], 'roadArrow'],
             ]}
             paint={{
@@ -285,11 +277,7 @@ function App() {
             filter={[
               'all',
               ['==', ['get', 'layerType'], 'point'],
-              [
-                'in',
-                ['get', 'featureGroup'],
-                ['literal', Array.from(visibleGroups)],
-              ],
+              ['in', ['get', 'featureGroup'], ['literal', visibleGroupsArray]],
             ]}
             paint={{ 'circle-color': ['get', 'icon-color'] }}
           />
@@ -300,7 +288,7 @@ function App() {
             beforeId={firstSymbolLayer}
             type='line'
             id='osm-bike-paths'
-            filter={['to-boolean', visibleGroups.has('osmBikePaths')]}
+            filter={['to-boolean', visibleGroups['osmBikePath'] ?? false]}
             paint={{
               'line-color': '#3f5ba9',
               'line-width': 4,

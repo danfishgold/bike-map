@@ -5,7 +5,7 @@ import {
   featureGroups,
 } from './myMapsMapData'
 import { Pane } from './Pane'
-import { toggleSetMember } from './utils'
+import { toggleSetRecordMember } from './utils'
 
 export function LayerToggles({
   isOpen,
@@ -15,8 +15,10 @@ export function LayerToggles({
 }: {
   isOpen: boolean
   setIsOpen: (isOpen: boolean) => void
-  visibleLayers: Set<FeatureGroup | 'osmBikePaths'>
-  setVisibleLayers: (visibleLayers: Set<FeatureGroup | 'osmBikePaths'>) => void
+  visibleLayers: Partial<Record<FeatureGroup | 'osmBikePath', true>>
+  setVisibleLayers: (
+    visibleLayers: Partial<Record<FeatureGroup | 'osmBikePath', true>>,
+  ) => void
 }) {
   return (
     <Pane
@@ -31,20 +33,24 @@ export function LayerToggles({
         <MdClose />
       </button>
       <h2>שכבות</h2>
-      {['osmBikePaths' as const, ...featureGroups].map((group) => (
+      {['osmBikePath' as const, ...featureGroups].map((group) => (
         <div key={group}>
           <input
             id={`layer-toggle-${group}`}
             type='checkbox'
-            checked={visibleLayers.has(group)}
+            checked={visibleLayers[group] ?? false}
             onChange={(event) =>
               setVisibleLayers(
-                toggleSetMember(visibleLayers, group, event.target.checked),
+                toggleSetRecordMember(
+                  visibleLayers,
+                  group,
+                  event.target.checked,
+                ),
               )
             }
           />
           <label htmlFor={`layer-toggle-${group}`}>
-            {group === 'osmBikePaths'
+            {group === 'osmBikePath'
               ? 'שבילי אופניים (OSM)'
               : featureGroupPluralDisplayName(group)}
           </label>
