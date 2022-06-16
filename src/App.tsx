@@ -54,7 +54,7 @@ function App() {
   const [tooltipFeature, setTooltipFeature] =
     useState<mapboxgl.MapboxGeoJSONFeature | null>(null)
 
-  const [viewState, setViewState] = useLocalStorage('mapViewState', {
+  const [viewState, setViewState] = useState({
     longitude: 34.7804731,
     latitude: 32.0805045,
     zoom: 12,
