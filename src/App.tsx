@@ -390,6 +390,16 @@ function App() {
               מצב דיבוג (אם אתם לא דן אז לא כדאי)
             </label>
           </div>
+          <button
+            onClick={() => {
+              if (confirm('בטוח?')) {
+                localStorage.clear()
+                window.location.reload()
+              }
+            }}
+          >
+            אתחול (אם משהו מוזר קורה)
+          </button>
         </Pane>
         <Pane
           isOpen={currentlyOpenPane === 'about'}
