@@ -19,7 +19,8 @@
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-icons": "^4.4.0",
-    "react-map-gl": "^7.0.15"
+    "react-map-gl": "^7.0.15",
+    "usehooks-ts": "^2.5.4"
   },
   "devDependencies": {
     "@types/node": "^17.0.40",

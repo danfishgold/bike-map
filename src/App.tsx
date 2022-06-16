@@ -8,7 +8,7 @@ import {
 } from 'geojson'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   MdArrowBack,
   MdDone,
@@ -31,6 +31,7 @@ import Map, {
   ScaleControl,
   Source,
 } from 'react-map-gl'
+import { useMediaQuery } from 'usehooks-ts'
 import darkMode from './assets/darkMode.png'
 import lightMode from './assets/lightMode.png'
 import ButtonBar from './ButtonBar'
@@ -45,6 +46,7 @@ import { compact, emptyFeatureGroup, useThrottledValue } from './utils'
 type Point = { latitude: number; longitude: number }
 
 function App() {
+  const canHover = useMediaQuery('(any-hover: hover)')
   const { myMapsFeatures, osmFeatures } = useMapFeatures()
   const [currentlyOpenPane, setCurrentlyOpenPane] = useState<
     'settings' | 'layers' | 'about' | null
@@ -62,7 +64,7 @@ function App() {
       'dirtPath',
     ]),
   )
-  const [hoverInfo, setHoverInfo] =
+  const [tooltipFeature, setTooltipFeature] =
     useState<mapboxgl.MapboxGeoJSONFeature | null>(null)
 
   const [viewState, setViewState] = useState({
@@ -79,8 +81,8 @@ function App() {
   )
   const route = useRoute(viewState, mode === 'constructRoute')
 
-  const hoverInfoZoomThreshold = isDebugging ? 0 : 13
-  const HoverInfoComponent = isDebugging ? HoverInfo.Debug : HoverInfo
+  const tooltipFeatureZoomThreshold = isDebugging ? 0 : 13
+  const TooltipFeatureComponent = isDebugging ? HoverInfo.Debug : HoverInfo
 
   const color1 = baseMap === 'light' ? '#f0f9ff' : '#0c4a6e'
   const color2 = baseMap === 'light' ? '#e0f2fe' : '#075985'
@@ -92,6 +94,49 @@ function App() {
     'my-maps-line-targets',
     'my-maps-polygons',
   ]
+
+  const highlightFeature = useCallback(
+    (feature: mapboxgl.MapboxGeoJSONFeature | null, map: mapboxgl.Map) => {
+      if (feature?.id !== tooltipFeature?.id) {
+        if (tooltipFeature) {
+          map.setFeatureState(tooltipFeature, {
+            highlighted: false,
+          })
+        }
+        if (feature) {
+          map.setFeatureState(feature, {
+            highlighted: true,
+          })
+        }
+      }
+      setTooltipFeature(feature)
+    },
+    [tooltipFeature],
+  )
+
+  const onMouseEnter = useCallback((event: mapboxgl.MapLayerMouseEvent) => {
+    event.target.getCanvas().style.cursor = 'pointer'
+  }, [])
+
+  const onMouseMove = useCallback(
+    (event: mapboxgl.MapLayerMouseEvent) => {
+      if (viewState.zoom <= tooltipFeatureZoomThreshold) {
+        return
+      }
+      const { features } = event
+      const hoveredFeature = features && features[0]
+      highlightFeature(hoveredFeature ?? null, event.target)
+    },
+    [viewState.zoom, tooltipFeatureZoomThreshold, highlightFeature],
+  )
+
+  const onMouseLeave = useCallback(
+    (event: mapboxgl.MapLayerMouseEvent) => {
+      event.target.getCanvas().style.cursor = ''
+      highlightFeature(null, event.target)
+    },
+    [canHover, highlightFeature],
+  )
 
   return (
     <div
@@ -106,24 +151,18 @@ function App() {
         onMove={(event) => {
           setViewState(event.viewState)
           const { latitude, longitude, zoom } = event.viewState
-          const newHoverInfo =
-            zoom > hoverInfoZoomThreshold
-              ? featureAtPosition({
-                  map: event.target,
-                  position: [longitude, latitude],
-                  interactiveLayerIds,
-                })
-              : null
+          if (!canHover) {
+            const newTooltipFeature =
+              zoom > tooltipFeatureZoomThreshold
+                ? featureAtPosition({
+                    map: event.target,
+                    position: [longitude, latitude],
+                    interactiveLayerIds,
+                  })
+                : null
 
-          if (newHoverInfo?.id !== hoverInfo?.id) {
-            if (hoverInfo) {
-              event.target.setFeatureState(hoverInfo, { hover: false })
-            }
-            if (newHoverInfo) {
-              event.target.setFeatureState(newHoverInfo, { hover: true })
-            }
+            highlightFeature(newTooltipFeature, event.target)
           }
-          setHoverInfo(newHoverInfo)
         }}
         style={{ flexGrow: 1, position: 'relative' }}
         mapStyle={
@@ -134,10 +173,9 @@ function App() {
         mapboxAccessToken={env.VITE_MAPBOX_TOKEN}
         attributionControl={false}
         interactiveLayerIds={interactiveLayerIds}
-        onMouseEnter={(event) =>
-          (event.target.getCanvas().style.cursor = 'pointer')
-        }
-        onMouseLeave={(event) => (event.target.getCanvas().style.cursor = '')}
+        onMouseEnter={canHover ? onMouseEnter : undefined}
+        onMouseMove={canHover ? onMouseMove : undefined}
+        onMouseLeave={canHover ? onMouseLeave : undefined}
         onLoad={(event) => {
           const layers = event.target.getStyle().layers
           // Find the index of the first symbol layer in the map style.
@@ -178,7 +216,7 @@ function App() {
                 ['linear'],
                 [
                   'case',
-                  ['boolean', ['feature-state', 'hover'], false],
+                  ['boolean', ['feature-state', 'highlighted'], false],
                   0.5,
                   0,
                 ],
@@ -206,7 +244,12 @@ function App() {
               'line-color': ['get', 'stroke'],
               'line-width': [
                 '*',
-                ['case', ['boolean', ['feature-state', 'hover'], false], 2, 1],
+                [
+                  'case',
+                  ['boolean', ['feature-state', 'highlighted'], false],
+                  2,
+                  1,
+                ],
                 ['get', 'stroke-width'],
               ],
               'line-opacity': ['get', 'stroke-opacity'],
@@ -301,16 +344,18 @@ function App() {
           />
         </Source>
 
-        <Marker
-          latitude={viewState.latitude}
-          longitude={viewState.longitude}
-          anchor='center'
-        >
-          <MdMyLocation
-            size={20}
-            color={baseMap === 'light' ? 'black' : 'white'}
-          />
-        </Marker>
+        {!canHover && (
+          <Marker
+            latitude={viewState.latitude}
+            longitude={viewState.longitude}
+            anchor='center'
+          >
+            <MdMyLocation
+              size={20}
+              color={baseMap === 'light' ? 'black' : 'white'}
+            />
+          </Marker>
+        )}
         <LayerToggles
           isOpen={currentlyOpenPane === 'layers'}
           setIsOpen={(isOpen) => setCurrentlyOpenPane(isOpen ? 'layers' : null)}
@@ -397,9 +442,9 @@ function App() {
           </p>
           <p style={{ textAlign: 'left' }}>באהבה, דן</p>
         </Pane>
-        {hoverInfo && !currentlyOpenPane && (
-          <HoverInfoComponent
-            feature={hoverInfo}
+        {tooltipFeature && !currentlyOpenPane && (
+          <TooltipFeatureComponent
+            feature={tooltipFeature}
             inDarkMode={baseMap === 'dark'}
           />
         )}
