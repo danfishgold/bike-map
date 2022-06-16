@@ -31,12 +31,12 @@ import Map, {
   ScaleControl,
   Source,
 } from 'react-map-gl'
-import { useMediaQuery, useTernaryDarkMode } from 'usehooks-ts'
+import { useLocalStorage, useMediaQuery, useTernaryDarkMode } from 'usehooks-ts'
 import darkMode from './assets/darkMode.png'
 import lightMode from './assets/lightMode.png'
 import ButtonBar from './ButtonBar'
 import { env } from './env'
-import { HoverInfo } from './HoverInfo'
+import { FeatureTooltip } from './FeatureTooltip'
 import { LayerToggles } from './LayerToggles'
 import { FeatureGroup } from './myMapsMapData'
 import { Pane } from './Pane'
@@ -66,7 +66,7 @@ function App() {
   const [tooltipFeature, setTooltipFeature] =
     useState<mapboxgl.MapboxGeoJSONFeature | null>(null)
 
-  const [viewState, setViewState] = useState({
+  const [viewState, setViewState] = useLocalStorage('mapViewState', {
     longitude: 34.7804731,
     latitude: 32.0805045,
     zoom: 12,
@@ -83,7 +83,9 @@ function App() {
     useTernaryDarkMode()
 
   const tooltipFeatureZoomThreshold = isDebugging ? 0 : 13
-  const TooltipFeatureComponent = isDebugging ? HoverInfo.Debug : HoverInfo
+  const FeatureTooltipComponent = isDebugging
+    ? FeatureTooltip.Debug
+    : FeatureTooltip
 
   const interactiveLayerIds = [
     'my-maps-points',
@@ -437,7 +439,7 @@ function App() {
           <p style={{ textAlign: 'left' }}>באהבה, דן</p>
         </Pane>
         {tooltipFeature && !currentlyOpenPane && (
-          <TooltipFeatureComponent feature={tooltipFeature} />
+          <FeatureTooltipComponent feature={tooltipFeature} />
         )}
       </Map>
       <ButtonBar>

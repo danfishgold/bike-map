@@ -2,7 +2,7 @@ import { featureGroupSingularDisplayName } from './myMapsMapData'
 import { Pane } from './Pane'
 import { rgbValuesForColor, textColor } from './utils'
 
-export function HoverInfo({
+export function FeatureTooltip({
   feature,
 }: {
   feature: mapboxgl.MapboxGeoJSONFeature
@@ -56,7 +56,7 @@ function FeatureTag({ feature }: { feature: mapboxgl.MapboxGeoJSONFeature }) {
   )
 }
 
-function DebugHoverInfo({
+function DebugFeatureTooltip({
   feature,
 }: {
   feature: mapboxgl.MapboxGeoJSONFeature
@@ -106,4 +106,4 @@ function DebugHoverInfo({
   )
 }
 
-HoverInfo.Debug = DebugHoverInfo
+FeatureTooltip.Debug = DebugFeatureTooltip
