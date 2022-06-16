@@ -1,14 +1,6 @@
-import {
-  Feature,
-  FeatureCollection,
-  Geometry,
-  LineString,
-  Point as GeoJsonPoint,
-  Position,
-} from 'geojson'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import {
   MdArrowBack,
   MdDone,
@@ -25,11 +17,9 @@ import { TbRoute } from 'react-icons/tb'
 import Map, {
   AttributionControl,
   GeolocateControl,
-  Layer,
   Marker,
   NavigationControl,
   ScaleControl,
-  Source,
 } from 'react-map-gl'
 import { useLocalStorage, useMediaQuery, useTernaryDarkMode } from 'usehooks-ts'
 import darkMode from './assets/darkMode.png'
@@ -37,17 +27,14 @@ import lightMode from './assets/lightMode.png'
 import ButtonBar from './ButtonBar'
 import { env } from './env'
 import { FeatureTooltip } from './FeatureTooltip'
+import Layers, { interactiveLayerIds } from './Layers'
 import { LayerToggles } from './LayerToggles'
 import { FeatureGroup } from './myMapsMapData'
 import { Pane } from './Pane'
-import { useMapFeatures } from './useMapFeatures'
-import { compact, emptyFeatureGroup, useThrottledValue } from './utils'
-
-type Point = { latitude: number; longitude: number }
+import { useRoute } from './useRoute'
 
 function App() {
   const canHover = useMediaQuery('(any-hover: hover)')
-  const { myMapsFeatures, osmFeatures } = useMapFeatures()
   const [currentlyOpenPane, setCurrentlyOpenPane] = useState<
     'settings' | 'layers' | 'about' | null
   >(null)
@@ -63,10 +50,7 @@ function App() {
     calmedTrafficArea: true,
     dirtPath: true,
   })
-  const visibleGroupsArray = useMemo(
-    () => Object.keys(visibleGroups),
-    [visibleGroups],
-  )
+
   const [tooltipFeature, setTooltipFeature] =
     useState<mapboxgl.MapboxGeoJSONFeature | null>(null)
 
@@ -90,12 +74,6 @@ function App() {
   const FeatureTooltipComponent = isDebugging
     ? FeatureTooltip.Debug
     : FeatureTooltip
-
-  const interactiveLayerIds = [
-    'my-maps-points',
-    'my-maps-line-targets',
-    'my-maps-polygons',
-  ]
 
   const highlightFeature = useCallback(
     (feature: mapboxgl.MapboxGeoJSONFeature | null, map: mapboxgl.Map) => {
@@ -198,139 +176,11 @@ function App() {
         <AttributionControl
           customAttribution={['© המפה הציבורית לשבילי אופניים']}
         />
-        <Source id='my-maps-features' type='geojson' data={myMapsFeatures}>
-          <Layer
-            beforeId={firstSymbolLayer}
-            type='fill'
-            id='my-maps-polygons'
-            filter={[
-              'all',
-              ['==', ['get', 'layerType'], 'polygon'],
-              ['in', ['get', 'featureGroup'], ['literal', visibleGroupsArray]],
-            ]}
-            paint={{
-              'fill-color': ['get', 'fill'],
-              'fill-opacity': [
-                'interpolate',
-                ['linear'],
-                [
-                  'case',
-                  ['boolean', ['feature-state', 'highlighted'], false],
-                  0.5,
-                  0,
-                ],
-                0,
-                ['get', 'fill-opacity'],
-                1,
-                1,
-              ],
-            }}
-          />
-
-          <Layer
-            id='my-maps-lines'
-            type='line'
-            filter={[
-              'all',
-              ['==', ['get', 'layerType'], 'line'],
-              ['in', ['get', 'featureGroup'], ['literal', visibleGroupsArray]],
-            ]}
-            paint={{
-              'line-color': ['get', 'stroke'],
-              'line-width': [
-                '*',
-                [
-                  'case',
-                  ['boolean', ['feature-state', 'highlighted'], false],
-                  2,
-                  1,
-                ],
-                ['get', 'stroke-width'],
-              ],
-              'line-opacity': ['get', 'stroke-opacity'],
-            }}
-            layout={{
-              'line-cap': 'round',
-            }}
-          />
-          <Layer
-            beforeId={firstSymbolLayer}
-            type='line'
-            id='my-maps-line-targets'
-            filter={[
-              'all',
-              ['==', ['get', 'layerType'], 'line'],
-              ['in', ['get', 'featureGroup'], ['literal', visibleGroupsArray]],
-              ['!=', ['get', 'featureGroup'], 'roadArrow'],
-            ]}
-            paint={{
-              'line-width': 20,
-              'line-color': '#ffffff',
-              'line-opacity': 0.0001,
-            }}
-          />
-
-          <Layer
-            beforeId={firstSymbolLayer}
-            type='circle'
-            id='my-maps-points'
-            filter={[
-              'all',
-              ['==', ['get', 'layerType'], 'point'],
-              ['in', ['get', 'featureGroup'], ['literal', visibleGroupsArray]],
-            ]}
-            paint={{ 'circle-color': ['get', 'icon-color'] }}
-          />
-        </Source>
-
-        <Source type='geojson' data={osmFeatures ?? emptyFeatureGroup}>
-          <Layer
-            beforeId={firstSymbolLayer}
-            type='line'
-            id='osm-bike-paths'
-            filter={['to-boolean', visibleGroups['osmBikePath'] ?? false]}
-            paint={{
-              'line-color': '#3f5ba9',
-              'line-width': 4,
-            }}
-            layout={{
-              'line-cap': 'round',
-            }}
-          />
-        </Source>
-
-        <Source type='geojson' data={route.features}>
-          <Layer
-            beforeId={firstSymbolLayer}
-            filter={['==', ['geometry-type'], 'LineString']}
-            type='line'
-            id='route-border'
-            paint={{
-              'line-color': '#218531',
-              'line-width': 12,
-            }}
-            layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-          />
-          <Layer
-            beforeId={firstSymbolLayer}
-            filter={['==', ['geometry-type'], 'LineString']}
-            type='line'
-            id='route-lines'
-            paint={{
-              'line-color': '#2bbd43',
-              'line-width': 8,
-            }}
-            layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-          />
-          <Layer
-            beforeId={firstSymbolLayer}
-            filter={['==', ['geometry-type'], 'Point']}
-            type='circle'
-            id='route-points'
-            paint={{ 'circle-radius': 3, 'circle-color': 'white' }}
-          />
-        </Source>
-
+        <Layers
+          firstSymbolLayer={firstSymbolLayer}
+          visibleGroups={visibleGroups}
+          route={route}
+        />
         {!canHover && (
           <Marker
             latitude={viewState.latitude}
@@ -548,141 +398,6 @@ function App() {
 }
 
 export default App
-
-type Segment = {
-  origin: Point
-  destination: Point
-  feature: Feature<LineString>
-}
-
-type PartialSegment = {
-  origin: Point
-  destination: Point
-  feature: Feature<LineString> | null
-}
-
-function useRoute(center: Point, isTracking: boolean) {
-  const [segment, setSegment] = useState<PartialSegment | null>(null)
-  const throttledCenter = useThrottledValue(center, 250)
-
-  const [pastSegments, setPastSegments] = useState<Segment[]>([])
-
-  useEffect(() => {
-    if (!isTracking) {
-      return
-    }
-    if (!segment || distanceSortOf(segment.origin, center) < 0.001) {
-      return
-    }
-
-    console.log('calculating')
-    fetchRoute(segment.origin, throttledCenter).then((feature) =>
-      setSegment({
-        origin: segment.origin,
-        destination: throttledCenter,
-        feature,
-      }),
-    )
-  }, [throttledCenter, segment?.origin, isTracking])
-
-  // useEffect(() => {
-  //   if (isTracking) {
-  //     setSegment({ origin: center, destination: center, feature: null })
-  //   }
-  // }, [isTracking])
-
-  const clear = () => {
-    setPastSegments([])
-    setSegment(null)
-  }
-
-  const addStop = () => {
-    if (segment && !segment?.feature) {
-      return
-    }
-    if (segment) {
-      setPastSegments([...pastSegments, segment as Segment])
-    }
-    const lastSegment = segment ? segment : pastSegments.at(-1)
-    const lastDestination = lastSegment?.feature?.geometry.coordinates.at(-1)
-    const origin = lastDestination
-      ? { longitude: lastDestination[0], latitude: lastDestination[1] }
-      : center
-
-    setSegment({
-      origin,
-      destination: center,
-      feature: null,
-    })
-  }
-
-  const removeStop = () => {
-    if (!pastSegments.length) {
-      return
-    }
-    const lastSegment = pastSegments[pastSegments.length - 1]
-    setPastSegments(pastSegments.slice(0, -1))
-    setSegment({
-      origin: lastSegment.origin,
-      destination: center,
-      feature: null,
-    })
-  }
-
-  const features: FeatureCollection<Geometry> = useMemo(() => {
-    const segments = compact([...pastSegments, segment])
-    const lineFeatures: Feature<LineString>[] = compact(
-      segments.map((segment) => segment.feature),
-    )
-
-    const pointFeatures: Feature<GeoJsonPoint>[] = segments.flatMap(
-      (segment): Feature<GeoJsonPoint>[] => {
-        const points = segment.feature
-          ? compact([
-              segment.feature.geometry.coordinates.at(0),
-              segment.feature.geometry.coordinates.at(-1),
-            ])
-          : []
-
-        return points.map(pointFeature)
-      },
-    )
-
-    return {
-      type: 'FeatureCollection',
-      features: [...lineFeatures, ...pointFeatures],
-    }
-  }, [pastSegments, segment])
-
-  const canRemoveStop = pastSegments.length > 0
-
-  return { canRemoveStop, clear, addStop, removeStop, features }
-}
-
-function distanceSortOf(p1: Point, p2: Point) {
-  return Math.hypot(p1.latitude - p2.latitude, p1.longitude - p2.longitude)
-}
-
-async function fetchRoute(origin: Point, destination: Point) {
-  const response = await fetch(
-    `https://api.mapbox.com/directions/v5/mapbox/cycling/${origin.longitude},${origin.latitude};${destination.longitude},${destination.latitude}?geometries=geojson&access_token=${env.VITE_MAPBOX_TOKEN}`,
-  )
-  const data = await response.json()
-
-  const feature = { type: 'Feature', ...data.routes[0] }
-  return feature
-}
-
-function pointFeature(point: Point | Position): Feature<GeoJsonPoint> {
-  const coordinates = Array.isArray(point)
-    ? point
-    : [point.longitude, point.latitude]
-  return {
-    type: 'Feature',
-    geometry: { type: 'Point', coordinates },
-    properties: {},
-  }
-}
 
 function featureAtPosition({
   map,

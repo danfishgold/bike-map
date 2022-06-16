@@ -9,7 +9,7 @@ export function useMapFeatures() {
   const [myMapsFeatures, setMyMapsFeatures] =
     useState<FeatureCollection<Geometry, MyMapsProperties>>(emptyFeatureGroup)
   const [osmFeatures, setOsmFeatures] =
-    useState<FeatureCollection<Geometry> | null>(null)
+    useState<FeatureCollection<Geometry>>(emptyFeatureGroup)
 
   useEffect(() => {
     fetchMyMapsFeatures()
