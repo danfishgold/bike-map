@@ -1,12 +1,139 @@
-import { PropsWithChildren } from 'react'
+import 'mapbox-gl/dist/mapbox-gl.css'
 import { IconType } from 'react-icons'
+import {
+  MdArrowBack,
+  MdDone,
+  MdEdit,
+  MdInfoOutline,
+  MdLayers,
+  MdOutlineAddLocationAlt,
+  MdOutlineIosShare,
+  MdOutlineWrongLocation,
+  MdSettings,
+} from 'react-icons/md'
+import { TbRoute } from 'react-icons/tb'
+import { Mode, Pane } from './App'
+import { Route } from './useRoute'
 
-export default function ButtonBar({ children }: PropsWithChildren<{}>) {
+type Props = {
+  mode: Mode
+  setMode: (mode: Mode) => void
+  currentlyOpenPane: Pane | null
+  setCurrentlyOpenPane: (pane: Pane | null) => void
+  route: Route
+}
+export default function ButtonBar({
+  mode,
+  setMode,
+  currentlyOpenPane,
+  setCurrentlyOpenPane,
+  route,
+}: Props) {
   return (
     <div
       style={{ display: 'flex', flexDirection: 'row', alignItems: 'stretch' }}
     >
-      {children}
+      {mode === 'browse' ? (
+        <>
+          <ButtonBar.Button
+            label='שכבות'
+            icon={MdLayers}
+            color='var(--blue-1)'
+            onClick={() =>
+              setCurrentlyOpenPane(
+                currentlyOpenPane === 'layers' ? null : 'layers',
+              )
+            }
+          />
+          <ButtonBar.Button
+            label='תכנון מסלול'
+            icon={TbRoute}
+            color='var(--blue-2)'
+            onClick={() => setMode('constructRoute')}
+          />
+          <ButtonBar.Button
+            label='הגדרות'
+            icon={MdSettings}
+            color='var(--blue-3)'
+            onClick={() =>
+              setCurrentlyOpenPane(
+                currentlyOpenPane === 'settings' ? null : 'settings',
+              )
+            }
+          />
+          <ButtonBar.Button
+            label='אודות'
+            icon={MdInfoOutline}
+            color='var(--blue-4)'
+            onClick={() =>
+              setCurrentlyOpenPane(
+                currentlyOpenPane === 'about' ? null : 'about',
+              )
+            }
+          />
+        </>
+      ) : mode === 'constructRoute' ? (
+        <>
+          <ButtonBar.Button
+            label='חזרה'
+            icon={MdArrowBack}
+            color='var(--blue-1)'
+            onClick={() => {
+              route.clear()
+              setMode('browse')
+            }}
+          />
+          <ButtonBar.Button
+            disabled={!route.canRemoveStop}
+            label='הסרת עצירה'
+            icon={MdOutlineWrongLocation}
+            color='var(--blue-2)'
+            onClick={() => route.removeStop()}
+          />
+          <ButtonBar.Button
+            label='הוספת עצירה'
+            icon={MdOutlineAddLocationAlt}
+            color='var(--blue-3)'
+            onClick={() => route.addStop()}
+          />
+          <ButtonBar.Button
+            label='סיום'
+            icon={MdDone}
+            color='var(--blue-4)'
+            onClick={() => setMode('viewRoute')}
+          />
+        </>
+      ) : (
+        <>
+          <ButtonBar.Button
+            label='חזרה'
+            icon={MdArrowBack}
+            color='var(--blue-1)'
+            onClick={() => {
+              route.clear()
+              setMode('browse')
+            }}
+          />
+          <ButtonBar.Button
+            label='עריכת המסלול'
+            icon={MdEdit}
+            color='var(--blue-2)'
+            onClick={() => setMode('constructRoute')}
+          />
+          <ButtonBar.Button
+            label='מידע נוסף'
+            icon={MdInfoOutline}
+            color='var(--blue-3)'
+            onClick={() => alert('בסופו של דבר')}
+          />
+          <ButtonBar.Button
+            label='שיתוף'
+            icon={MdOutlineIosShare}
+            color='var(--blue-4)'
+            onClick={() => alert('בסופו של דבר')}
+          />
+        </>
+      )}
     </div>
   )
 }

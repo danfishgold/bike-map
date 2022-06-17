@@ -1,19 +1,7 @@
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { useCallback, useState } from 'react'
-import {
-  MdArrowBack,
-  MdDone,
-  MdEdit,
-  MdInfoOutline,
-  MdLayers,
-  MdMyLocation,
-  MdOutlineAddLocationAlt,
-  MdOutlineIosShare,
-  MdOutlineWrongLocation,
-  MdSettings,
-} from 'react-icons/md'
-import { TbRoute } from 'react-icons/tb'
+import { MdMyLocation } from 'react-icons/md'
 import Map, {
   AttributionControl,
   GeolocateControl,
@@ -22,8 +10,7 @@ import Map, {
   ScaleControl,
 } from 'react-map-gl'
 import { useLocalStorage, useMediaQuery, useTernaryDarkMode } from 'usehooks-ts'
-import darkMode from './assets/darkMode.png'
-import lightMode from './assets/lightMode.png'
+import About from './About'
 import ButtonBar from './ButtonBar'
 import { env } from './env'
 import { FeatureTooltip } from './FeatureTooltip'
@@ -31,13 +18,15 @@ import Layers, { interactiveLayerIds } from './Layers'
 import { LayerToggles } from './LayerToggles'
 import { FeatureGroup } from './myMapsMapData'
 import { Pane } from './Pane'
+import Settings from './Settings'
 import { useRoute } from './useRoute'
+
+export type Mode = 'browse' | 'constructRoute' | 'viewRoute'
+export type Pane = 'layers' | 'settings' | 'about'
 
 function App() {
   const canHover = useMediaQuery('(any-hover: hover)')
-  const [currentlyOpenPane, setCurrentlyOpenPane] = useState<
-    'settings' | 'layers' | 'about' | null
-  >(null)
+  const [currentlyOpenPane, setCurrentlyOpenPane] = useState<Pane | null>(null)
   const [isDebugging, setIsDebugging] = useState(false)
   const [visibleGroups, setVisibleGroups] = useLocalStorage<
     Partial<Record<FeatureGroup | 'osmBikePath', true>>
@@ -60,9 +49,7 @@ function App() {
     zoom: 12,
   })
 
-  const [mode, setMode] = useState<'browse' | 'constructRoute' | 'viewRoute'>(
-    'browse',
-  )
+  const [mode, setMode] = useState<Mode>('browse')
   const [firstSymbolLayer, setFirstSymbolLayer] = useState<string | undefined>(
     undefined,
   )
@@ -205,39 +192,7 @@ function App() {
             maxHeight: 'calc(100% - 40px)',
           }}
         >
-          <h2>הגדרות</h2>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'auto auto auto 1fr',
-              gap: '20px',
-            }}
-          >
-            <LightDarkModeToggleButton mode='light' />
-            <LightDarkModeToggleButton mode='dark' />
-            <LightDarkModeToggleButton mode='system' />
-          </div>
-          <div>
-            <input
-              type='checkbox'
-              checked={isDebugging}
-              onChange={(event) => setIsDebugging(event.target.checked)}
-              id='settings__is-debugging-checkbox'
-            />
-            <label htmlFor='settings__is-debugging-checkbox'>
-              מצב דיבוג (אם אתם לא דן אז לא כדאי)
-            </label>
-          </div>
-          <button
-            onClick={() => {
-              if (confirm('בטוח?')) {
-                localStorage.clear()
-                window.location.reload()
-              }
-            }}
-          >
-            אתחול (אם משהו מוזר קורה)
-          </button>
+          <Settings isDebugging={isDebugging} setIsDebugging={setIsDebugging} />
         </Pane>
         <Pane
           isOpen={currentlyOpenPane === 'about'}
@@ -248,139 +203,19 @@ function App() {
             maxHeight: 'calc(100% - 40px)',
           }}
         >
-          <h2>אודות</h2>
-          <p>האתר הזה נבנה על ידי דן פישגולד.</p>
-          <p>
-            המפה וחלק מהמידע שמוצג עליה מגיע מ{' '}
-            <a href='https://openstreetmap.org'>Open Street Map</a> (ומ Mapbox).
-          </p>
-          <p>
-            כמעט כל המידע שמופיע על המפה מגיע מ
-            <a href='https://www.google.com/maps/d/viewer?mid=1X14aSd2dYmTnBfy6UDmumcvshcw'>
-              המפה הציבורית לשבילי אופניים
-            </a>
-            .
-          </p>
-          <p>תודה לכל האנשים שהקדישו מזמנם ליצירת ועדכון וטיפוח המידע הזה!</p>
-          <p>
-            קוד המקור של האתר זמין ב
-            <a href='https://github.com/danfishgold/bike-map'>גיטהאב</a>. אתם
-            מוזמנים לנבור או לתקן באגים או להציע הצעות!
-          </p>
-          <p>
-            אם יש לכם שאלות או בקשות ויש לכם את מספר הטלפון שלי צרו איתי קשר
-            בוואטסאפ. אם אין לכם את מספר הטלפון שלי צרו איתי קשר בטוויטר. אם אין
-            לכם טוויטר צרו איתי קשר בפייסבוק. די דיינו די דיינו.
-          </p>
-          <p style={{ textAlign: 'left' }}>באהבה, דן</p>
+          <About />
         </Pane>
         {tooltipFeature && !currentlyOpenPane && (
           <FeatureTooltipComponent feature={tooltipFeature} />
         )}
       </Map>
-      <ButtonBar>
-        {mode === 'browse' ? (
-          <>
-            <ButtonBar.Button
-              label='שכבות'
-              icon={MdLayers}
-              color='var(--blue-1)'
-              onClick={() =>
-                setCurrentlyOpenPane(
-                  currentlyOpenPane === 'layers' ? null : 'layers',
-                )
-              }
-            />
-            <ButtonBar.Button
-              label='תכנון מסלול'
-              icon={TbRoute}
-              color='var(--blue-2)'
-              onClick={() => setMode('constructRoute')}
-            />
-            <ButtonBar.Button
-              label='הגדרות'
-              icon={MdSettings}
-              color='var(--blue-3)'
-              onClick={() =>
-                setCurrentlyOpenPane(
-                  currentlyOpenPane === 'settings' ? null : 'settings',
-                )
-              }
-            />
-            <ButtonBar.Button
-              label='אודות'
-              icon={MdInfoOutline}
-              color='var(--blue-4)'
-              onClick={() =>
-                setCurrentlyOpenPane(
-                  currentlyOpenPane === 'about' ? null : 'about',
-                )
-              }
-            />
-          </>
-        ) : mode === 'constructRoute' ? (
-          <>
-            <ButtonBar.Button
-              label='חזרה'
-              icon={MdArrowBack}
-              color='var(--blue-1)'
-              onClick={() => {
-                route.clear()
-                setMode('browse')
-              }}
-            />
-            <ButtonBar.Button
-              disabled={!route.canRemoveStop}
-              label='הסרת עצירה'
-              icon={MdOutlineWrongLocation}
-              color='var(--blue-2)'
-              onClick={() => route.removeStop()}
-            />
-            <ButtonBar.Button
-              label='הוספת עצירה'
-              icon={MdOutlineAddLocationAlt}
-              color='var(--blue-3)'
-              onClick={() => route.addStop()}
-            />
-            <ButtonBar.Button
-              label='סיום'
-              icon={MdDone}
-              color='var(--blue-4)'
-              onClick={() => setMode('viewRoute')}
-            />
-          </>
-        ) : (
-          <>
-            <ButtonBar.Button
-              label='חזרה'
-              icon={MdArrowBack}
-              color='var(--blue-1)'
-              onClick={() => {
-                route.clear()
-                setMode('browse')
-              }}
-            />
-            <ButtonBar.Button
-              label='עריכת המסלול'
-              icon={MdEdit}
-              color='var(--blue-2)'
-              onClick={() => setMode('constructRoute')}
-            />
-            <ButtonBar.Button
-              label='מידע נוסף'
-              icon={MdInfoOutline}
-              color='var(--blue-3)'
-              onClick={() => alert('בסופו של דבר')}
-            />
-            <ButtonBar.Button
-              label='שיתוף'
-              icon={MdOutlineIosShare}
-              color='var(--blue-4)'
-              onClick={() => alert('בסופו של דבר')}
-            />
-          </>
-        )}
-      </ButtonBar>
+      <ButtonBar
+        mode={mode}
+        setMode={setMode}
+        currentlyOpenPane={currentlyOpenPane}
+        setCurrentlyOpenPane={setCurrentlyOpenPane}
+        route={route}
+      />
     </div>
   )
 }
@@ -401,81 +236,4 @@ function featureAtPosition({
     layers: interactiveLayerIds,
   })
   return features[0] ?? null
-}
-
-function LightDarkModeToggleButton({
-  mode,
-}: {
-  mode: 'dark' | 'light' | 'system'
-}) {
-  const { ternaryDarkMode, setTernaryDarkMode } = useTernaryDarkMode()
-  const isSelected = ternaryDarkMode === mode
-  const onClick = () => setTernaryDarkMode(mode)
-  const label = {
-    light: 'בהיר',
-    dark: 'כהה',
-    system: 'אוטומטי',
-  }[mode]
-  return (
-    <button
-      aria-selected={isSelected}
-      onClick={onClick}
-      style={{
-        padding: 0,
-        outline: 0,
-        border: 0,
-        margin: 0,
-        background: 'none',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}
-    >
-      <div
-        style={{
-          width: '80px',
-          borderRadius: '8px',
-          boxShadow: isSelected ? '0 0 0 2px var(--blue-6)' : 'none',
-          overflow: 'hidden',
-        }}
-      >
-        <TernaryDarkModeImage mode={mode} />
-      </div>
-      <span style={{ fontWeight: isSelected ? 900 : 400 }}>{label}</span>
-    </button>
-  )
-}
-
-function TernaryDarkModeImage({ mode }: { mode: 'dark' | 'light' | 'system' }) {
-  switch (mode) {
-    case 'light': {
-      return <img style={{ display: 'block', width: '80px' }} src={lightMode} />
-    }
-    case 'dark': {
-      return <img style={{ display: 'block', width: '80px' }} src={darkMode} />
-    }
-    case 'system': {
-      return (
-        <div
-          style={{
-            width: '80px',
-            position: 'relative',
-          }}
-        >
-          <img style={{ display: 'block', width: '80px' }} src={lightMode} />
-          <img
-            style={{
-              display: 'block',
-              position: 'absolute',
-              width: '80px',
-              top: 0,
-              left: 0,
-              clipPath: 'polygon(0 0, 65% 0, 35% 100%, 0 100%)',
-            }}
-            src={darkMode}
-          />
-        </div>
-      )
-    }
-  }
 }
