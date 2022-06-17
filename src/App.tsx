@@ -209,25 +209,13 @@ function App() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'auto auto 1fr',
+              gridTemplateColumns: 'auto auto auto 1fr',
               gap: '20px',
             }}
           >
-            <LightDarkModeToggleButton
-              onClick={() => setTernaryDarkMode('light')}
-              imageSource={lightMode}
-              label='בהיר'
-              isSelected={ternaryDarkMode === 'light'}
-            />
-            <LightDarkModeToggleButton
-              onClick={() => setTernaryDarkMode('dark')}
-              imageSource={darkMode}
-              label='כהה'
-              isSelected={ternaryDarkMode === 'dark'}
-            />
-            <button onClick={() => setTernaryDarkMode('system')}>
-              מצב מערכת
-            </button>
+            <LightDarkModeToggleButton mode='light' />
+            <LightDarkModeToggleButton mode='dark' />
+            <LightDarkModeToggleButton mode='system' />
           </div>
           <div>
             <input
@@ -416,16 +404,18 @@ function featureAtPosition({
 }
 
 function LightDarkModeToggleButton({
-  onClick,
-  label,
-  imageSource,
-  isSelected,
+  mode,
 }: {
-  onClick: () => void
-  label: string
-  imageSource: string
-  isSelected: boolean
+  mode: 'dark' | 'light' | 'system'
 }) {
+  const { ternaryDarkMode, setTernaryDarkMode } = useTernaryDarkMode()
+  const isSelected = ternaryDarkMode === mode
+  const onClick = () => setTernaryDarkMode(mode)
+  const label = {
+    light: 'בהיר',
+    dark: 'כהה',
+    system: 'אוטומטי',
+  }[mode]
   return (
     <button
       aria-selected={isSelected}
@@ -441,16 +431,51 @@ function LightDarkModeToggleButton({
         alignItems: 'center',
       }}
     >
-      <img
+      <div
         style={{
           width: '80px',
           borderRadius: '8px',
-          border: isSelected ? '2px solid #0284c7' : 0,
-          boxSizing: 'border-box',
+          boxShadow: isSelected ? '0 0 0 2px var(--blue-6)' : 'none',
+          overflow: 'hidden',
         }}
-        src={imageSource}
-      />
+      >
+        <TernaryDarkModeImage mode={mode} />
+      </div>
       <span style={{ fontWeight: isSelected ? 900 : 400 }}>{label}</span>
     </button>
   )
+}
+
+function TernaryDarkModeImage({ mode }: { mode: 'dark' | 'light' | 'system' }) {
+  switch (mode) {
+    case 'light': {
+      return <img style={{ display: 'block', width: '80px' }} src={lightMode} />
+    }
+    case 'dark': {
+      return <img style={{ display: 'block', width: '80px' }} src={darkMode} />
+    }
+    case 'system': {
+      return (
+        <div
+          style={{
+            width: '80px',
+            position: 'relative',
+          }}
+        >
+          <img style={{ display: 'block', width: '80px' }} src={lightMode} />
+          <img
+            style={{
+              display: 'block',
+              position: 'absolute',
+              width: '80px',
+              top: 0,
+              left: 0,
+              clipPath: 'polygon(0 0, 65% 0, 35% 100%, 0 100%)',
+            }}
+            src={darkMode}
+          />
+        </div>
+      )
+    }
+  }
 }

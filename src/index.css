@@ -28,6 +28,8 @@ body {
   --blue-2: #e0f2fe;
   --blue-3: #bae6fd;
   --blue-4: #7dd3fc;
+  --blue-5: #38bdf8;
+  --blue-6: #0ea5e9;
   --panel-background: white;
   --panel-border: black;
   --text-color: black;
@@ -38,6 +40,8 @@ body {
   --blue-2: #075985;
   --blue-3: #0369a1;
   --blue-4: #0284c7;
+  --blue-5: #0ea5e9;
+  --blue-6: #38bdf8;
   --panel-background: #222;
   --panel-border: black;
   --text-color: white;
