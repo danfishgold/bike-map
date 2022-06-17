@@ -21,6 +21,7 @@ type RawMyMapsProperties = {
 export type MyMapsProperties = RawMyMapsProperties & {
   featureGroup: FeatureGroup
   layerType: LayerType
+  highlightable: boolean
 }
 
 export type LayerType = 'line' | 'point' | 'polygon'
@@ -28,7 +29,6 @@ export type LayerType = 'line' | 'point' | 'polygon'
 const lineGroups = [
   'bikePath',
   'recommendedRoad',
-  'roadArrow',
   'dangerousRoad',
   'ofney dan',
   'planned',
@@ -85,12 +85,13 @@ export async function fetchMyMapsFeatures(): Promise<
   >
 
   const featuresButWithIdsAndGroups = goodGeoJson.features.map((feature) => {
-    const featureGroup = parseFeatureGroup(feature)
+    const [featureGroup, highlightable] = parseFeature(feature)
     const layerType = featureGroupLayerType(featureGroup)
     const properties: MyMapsProperties = {
       ...feature.properties,
       featureGroup,
       layerType,
+      highlightable,
     }
     return {
       ...feature,
@@ -105,99 +106,100 @@ export async function fetchMyMapsFeatures(): Promise<
   }
 }
 
-function parseFeatureGroup(
+function parseFeature(
   feature: Feature<Geometry, RawMyMapsProperties>,
-): FeatureGroup {
+): [FeatureGroup, boolean] {
   if (feature.geometry.type === 'LineString') {
-    return parseLineGroup(feature)
+    return parseLineFeature(feature)
   } else if (
     feature.geometry.type === 'Polygon' ||
     feature.geometry.type === 'GeometryCollection'
   ) {
-    return parsePolygonGroup(feature)
+    return parsePolygonFeature(feature)
   } else if (feature.geometry.type === 'Point') {
-    return parsePointGroup(feature)
+    return parsePointFeature(feature)
   } else {
     throw new Error(`Unknown geometry type: ${feature.geometry.type}`)
   }
 }
 
-function parseLineGroup(
+function parseLineFeature(
   feature: Feature<Geometry, RawMyMapsProperties>,
-): LineGroup {
+): [LineGroup, boolean] {
   const { name, stroke, status, סוג } = feature.properties
   if (stroke === '#ff5252') {
-    return 'dangerousRoad'
+    return ['dangerousRoad', true]
   } else if (stroke === '#0ba9cc' || stroke === '#4186f0') {
     if (/^קו \d+$/.test(name)) {
-      return 'roadArrow'
+      // this is a direction arrow
+      return ['recommendedRoad', false]
     } else {
-      return 'recommendedRoad'
+      return ['recommendedRoad', true]
     }
   } else if (stroke === '#c6a4cf') {
-    return 'ofney dan'
+    return ['ofney dan', true]
   } else if (stroke === '#fad199' || status?.trim() === 'תכנון') {
-    return 'planned'
+    return ['planned', true]
   } else if (status?.trim() === 'בביצוע') {
-    return 'inProgress'
+    return ['inProgress', true]
   } else if (stroke === '#f8971b' || stroke === '#ffdd5e') {
-    return 'missing'
+    return ['missing', true]
   } else if (stroke === '#7c3592') {
-    return 'bridge'
+    return ['bridge', true]
   } else if (סוג?.trim() === 'דרך עפר') {
-    return 'dirtRoad'
+    return ['dirtRoad', true]
   } else if (סוג?.trim() === 'שביל עפר') {
-    return 'dirtPath'
+    return ['dirtPath', true]
   } else if (stroke === '#3f5ba9') {
-    return 'bikePath'
+    return ['bikePath', true]
   } else if (name.trim() === 'קו 121') {
-    return 'mistake'
+    return ['mistake', true]
   } else {
-    return 'unknown'
+    return ['unknown', true]
   }
 }
 
-function parsePolygonGroup(
+function parsePolygonFeature(
   feature: Feature<Geometry, RawMyMapsProperties>,
-): PolygonGroup {
+): [PolygonGroup, boolean] {
   if (feature.properties.name.includes('דקות רכיבה מ')) {
-    return 'trainStationIsochrone'
+    return ['trainStationIsochrone', true]
   } else if (feature.properties.fill === '#009d57') {
-    return 'coveredArea'
+    return ['coveredArea', true]
   } else if (feature.properties.fill === '#ee9c96') {
-    return 'hill'
+    return ['hill', true]
   } else if (feature.properties.fill === '#93d7e8') {
-    return 'calmedTrafficArea'
+    return ['calmedTrafficArea', true]
   } else {
-    return 'unknownPolygon'
+    return ['unknownPolygon', true]
   }
 }
 
-function parsePointGroup(
+function parsePointFeature(
   feature: Feature<Geometry, RawMyMapsProperties>,
-): PointGroup {
+): [PointGroup, boolean] {
   if (
     feature.properties.icon ===
     'https://www.gstatic.com/mapspro/images/stock/962-wht-diamond-blank.png'
   ) {
-    return 'junction'
+    return ['junction', true]
   } else if (
     feature.properties.icon ===
     'https://www.gstatic.com/mapspro/images/stock/1269-poi-hospital-cross.png'
   ) {
-    return 'calmedJunction'
+    return ['calmedJunction', true]
   } else if (
     feature.properties.icon ===
     'https://www.gstatic.com/mapspro/images/stock/1145-crisis-explosion.png'
   ) {
-    return 'blockedPath'
+    return ['blockedPath', true]
   } else if (
     feature.properties.icon ===
     'https://www.gstatic.com/mapspro/images/stock/1459-trans-train.png'
   ) {
-    return 'trainStation'
+    return ['trainStation', true]
   } else {
-    return 'generalNote'
+    return ['generalNote', true]
   }
 }
 
@@ -217,8 +219,6 @@ export function featureGroupSingularDisplayName(layer: FeatureGroup): string {
       return 'שביל'
     case 'recommendedRoad':
       return 'מסלול חלופי'
-    case 'roadArrow':
-      return 'חץ סטריות'
     case 'dangerousRoad':
       return 'כביש מסוכן'
     case 'ofney dan':
@@ -268,8 +268,6 @@ export function featureGroupPluralDisplayName(layer: FeatureGroup): string {
       return 'שבילי אופניים'
     case 'recommendedRoad':
       return 'מסלולים חלופיים'
-    case 'roadArrow':
-      return 'חיצי סטריות'
     case 'dangerousRoad':
       return 'כבישים מסוכנים'
     case 'ofney dan':

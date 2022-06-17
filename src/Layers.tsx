@@ -198,7 +198,7 @@ function MyMapsLayers({
           'all',
           ['==', ['get', 'layerType'], 'line'],
           ['in', ['get', 'featureGroup'], ['literal', visibleGroupsArray]],
-          ['!=', ['get', 'featureGroup'], 'roadArrow'],
+          ['get', 'highlightable'],
         ]}
         paint={{
           'line-width': 20,

@@ -35,7 +35,6 @@ function App() {
   >('visibleGroups', {
     osmBikePath: true,
     recommendedRoad: true,
-    roadArrow: true,
     dangerousRoad: true,
     hill: true,
     calmedTrafficArea: true,
