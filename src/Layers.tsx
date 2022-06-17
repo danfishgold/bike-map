@@ -1,6 +1,7 @@
 import { FeatureCollection, Geometry } from 'geojson'
 import { useMemo } from 'react'
-import { Layer, Source } from 'react-map-gl'
+import { MdLocationPin } from 'react-icons/md'
+import { Layer, Marker, Source } from 'react-map-gl'
 import { FeatureGroup } from './myMapsMapData'
 import { useMapFeatures } from './useMapFeatures'
 import { Route } from './useRoute'
@@ -59,37 +60,49 @@ function RouteLayers({
   firstSymbolLayer: string | undefined
 }) {
   return (
-    <Source type='geojson' data={route.features}>
-      <Layer
-        beforeId={firstSymbolLayer}
-        filter={['==', ['geometry-type'], 'LineString']}
-        type='line'
-        id={LayerId.ROUTE_BORDERS}
-        paint={{
-          'line-color': '#218531',
-          'line-width': 12,
-        }}
-        layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-      />
-      <Layer
-        beforeId={firstSymbolLayer}
-        filter={['==', ['geometry-type'], 'LineString']}
-        type='line'
-        id={LayerId.ROUTE_LINES}
-        paint={{
-          'line-color': '#2bbd43',
-          'line-width': 8,
-        }}
-        layout={{ 'line-cap': 'round', 'line-join': 'round' }}
-      />
-      <Layer
-        beforeId={firstSymbolLayer}
-        filter={['==', ['geometry-type'], 'Point']}
-        type='circle'
-        id={LayerId.ROUTE_POINTS}
-        paint={{ 'circle-radius': 3, 'circle-color': 'white' }}
-      />
-    </Source>
+    <>
+      <Source type='geojson' data={route.features}>
+        <Layer
+          beforeId={firstSymbolLayer}
+          filter={['==', ['geometry-type'], 'LineString']}
+          type='line'
+          id={LayerId.ROUTE_BORDERS}
+          paint={{
+            'line-color': '#218531',
+            'line-width': 12,
+          }}
+          layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+        />
+        <Layer
+          beforeId={firstSymbolLayer}
+          filter={['==', ['geometry-type'], 'LineString']}
+          type='line'
+          id={LayerId.ROUTE_LINES}
+          paint={{
+            'line-color': '#2bbd43',
+            'line-width': 8,
+          }}
+          layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+        />
+        <Layer
+          beforeId={firstSymbolLayer}
+          filter={['==', ['geometry-type'], 'Point']}
+          type='circle'
+          id={LayerId.ROUTE_POINTS}
+          paint={{ 'circle-radius': 3, 'circle-color': 'white' }}
+        />
+      </Source>
+      {route.origin && (
+        <Marker
+          latitude={route.origin[1]}
+          longitude={route.origin[0]}
+          anchor='bottom'
+          offset={[0, 10]}
+        >
+          <MdLocationPin size={35} color='black' />
+        </Marker>
+      )}
+    </>
   )
 }
 

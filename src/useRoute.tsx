@@ -25,6 +25,7 @@ export type PartialSegment = {
 }
 
 export type Route = {
+  origin: Position | null
   canRemoveStop: boolean
   clear: () => void
   addStop: () => void
@@ -99,8 +100,11 @@ export function useRoute(center: Point, isTracking: boolean): Route {
     })
   }
 
+  const segments = useMemo(
+    () => compact([...pastSegments, segment]),
+    [pastSegments, segment],
+  )
   const features: FeatureCollection<Geometry> = useMemo(() => {
-    const segments = compact([...pastSegments, segment])
     const lineFeatures: Feature<LineString>[] = compact(
       segments.map((segment) => segment.feature),
     )
@@ -122,11 +126,33 @@ export function useRoute(center: Point, isTracking: boolean): Route {
       type: 'FeatureCollection',
       features: [...lineFeatures, ...pointFeatures],
     }
-  }, [pastSegments, segment])
+  }, [segments])
 
   const canRemoveStop = pastSegments.length > 0
 
-  return { canRemoveStop, clear, addStop, removeStop, features }
+  const firstSegment = segments.at(0)
+  const origin = useMemo(() => {
+    const firstSegment = segments.at(0)
+    if (!firstSegment) {
+      return null
+    }
+    const firstRoutePoint = firstSegment.feature?.geometry.coordinates.at(0)
+    return (
+      firstRoutePoint ?? [
+        firstSegment.origin.longitude,
+        firstSegment.origin.latitude,
+      ]
+    )
+  }, [firstSegment])
+
+  return {
+    canRemoveStop,
+    clear,
+    addStop,
+    removeStop,
+    features,
+    origin,
+  }
 }
 
 export function distanceSortOf(p1: Point, p2: Point) {
