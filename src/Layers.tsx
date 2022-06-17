@@ -216,7 +216,19 @@ function MyMapsLayers({
           ['==', ['get', 'layerType'], 'point'],
           ['in', ['get', 'featureGroup'], ['literal', visibleGroupsArray]],
         ]}
-        paint={{ 'circle-color': ['get', 'icon-color'] }}
+        paint={{
+          'circle-color': ['get', 'icon-color'],
+          'circle-radius': [
+            '*',
+            [
+              'case',
+              ['boolean', ['feature-state', 'highlighted'], false],
+              1.5,
+              1,
+            ],
+            5,
+          ],
+        }}
       />
     </Source>
   )
