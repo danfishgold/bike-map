@@ -2,13 +2,13 @@ import { FeatureCollection, Geometry } from 'geojson'
 import { useMemo } from 'react'
 import { MdLocationPin } from 'react-icons/md'
 import { Layer, Marker, Source } from 'react-map-gl'
-import { FeatureGroup } from './myMapsMapData'
+import { FeatureGroup } from './featureGroups'
 import { useMapFeatures } from './useMapFeatures'
 import { Route } from './useRoute'
 
 type Props = {
   firstSymbolLayer: string | undefined
-  visibleGroups: Partial<Record<FeatureGroup | 'osmBikePath', true>>
+  visibleGroups: Partial<Record<FeatureGroup, true>>
   route: Route
 }
 
@@ -141,10 +141,10 @@ function MyMapsLayers({
 }: {
   features: FeatureCollection<Geometry>
   firstSymbolLayer: string | undefined
-  visibleGroups: Partial<Record<FeatureGroup | 'osmBikePath', true>>
+  visibleGroups: Partial<Record<FeatureGroup, true>>
 }) {
   const visibleGroupsArray = useMemo(
-    () => Object.keys(visibleGroups) as Array<FeatureGroup | 'osmBikePath'>,
+    () => Object.keys(visibleGroups) as Array<FeatureGroup>,
     [visibleGroups],
   )
   return (

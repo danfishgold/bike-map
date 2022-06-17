@@ -1,4 +1,4 @@
-import { featureGroupSingularDisplayName } from './myMapsMapData'
+import { featureGroupSingularDisplayName } from './featureGroups'
 import { Panel } from './Panel'
 import { rgbValuesForColor, textColor } from './utils'
 

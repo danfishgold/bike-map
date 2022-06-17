@@ -6,9 +6,9 @@ export const emptyFeatureGroup: FeatureCollection<Geometry, any> = {
   features: [],
 }
 
-export function toggleSetRecordMember<T extends string>(
+export function toggleSetRecordMember<T extends string, K extends T>(
   setRecord: Partial<Record<T, true>>,
-  member: T,
+  member: K,
   include: boolean,
 ): Partial<Record<T, true>> {
   const newSetRecord = { ...setRecord }

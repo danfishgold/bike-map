@@ -3,6 +3,14 @@ import { Feature, FeatureCollection, Geometry } from 'geojson'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { customAlphabet } from 'nanoid'
 import { env } from './env'
+import {
+  featureGroupLayerType,
+  LayerType,
+  MyMapsFeatureGroup,
+  MyMapsLineGroup,
+  MyMapsPointGroup,
+  MyMapsPolygonGroup,
+} from './featureGroups'
 
 const nanoid = customAlphabet('1234567890', 18)
 
@@ -19,53 +27,10 @@ type RawMyMapsProperties = {
 }
 
 export type MyMapsProperties = RawMyMapsProperties & {
-  featureGroup: FeatureGroup
+  featureGroup: MyMapsFeatureGroup
   layerType: LayerType
   highlightable: boolean
 }
-
-export type LayerType = 'line' | 'point' | 'polygon'
-
-const lineGroups = [
-  'bikePath',
-  'recommendedRoad',
-  'dangerousRoad',
-  'ofney dan',
-  'planned',
-  'inProgress',
-  'missing',
-  'dirtRoad',
-  'dirtPath',
-  'bridge',
-  'unknown',
-  'mistake',
-] as const
-
-const polygonGroups = [
-  'unknownPolygon',
-  'trainStationIsochrone',
-  'coveredArea',
-  'hill',
-  'calmedTrafficArea',
-] as const
-const pointGroups = [
-  'junction',
-  'calmedJunction',
-  'blockedPath',
-  'trainStation',
-  'generalNote',
-] as const
-
-type LineGroup = typeof lineGroups[number]
-type PolygonGroup = typeof polygonGroups[number]
-type PointGroup = typeof pointGroups[number]
-
-export type FeatureGroup = LineGroup | PolygonGroup | PointGroup
-export const featureGroups: FeatureGroup[] = [
-  ...lineGroups,
-  ...polygonGroups,
-  ...pointGroups,
-]
 
 export async function fetchMyMapsFeatures(): Promise<
   FeatureCollection<Geometry, MyMapsProperties>
@@ -108,7 +73,7 @@ export async function fetchMyMapsFeatures(): Promise<
 
 function parseFeature(
   feature: Feature<Geometry, RawMyMapsProperties>,
-): [FeatureGroup, boolean] {
+): [MyMapsFeatureGroup, boolean] {
   if (feature.geometry.type === 'LineString') {
     return parseLineFeature(feature)
   } else if (
@@ -125,7 +90,7 @@ function parseFeature(
 
 function parseLineFeature(
   feature: Feature<Geometry, RawMyMapsProperties>,
-): [LineGroup, boolean] {
+): [MyMapsLineGroup, boolean] {
   const { name, stroke, status, סוג } = feature.properties
   if (stroke === '#ff5252') {
     return ['dangerousRoad', true]
@@ -161,7 +126,7 @@ function parseLineFeature(
 
 function parsePolygonFeature(
   feature: Feature<Geometry, RawMyMapsProperties>,
-): [PolygonGroup, boolean] {
+): [MyMapsPolygonGroup, boolean] {
   if (feature.properties.name.includes('דקות רכיבה מ')) {
     return ['trainStationIsochrone', true]
   } else if (feature.properties.fill === '#009d57') {
@@ -177,7 +142,7 @@ function parsePolygonFeature(
 
 function parsePointFeature(
   feature: Feature<Geometry, RawMyMapsProperties>,
-): [PointGroup, boolean] {
+): [MyMapsPointGroup, boolean] {
   if (
     feature.properties.icon ===
     'https://www.gstatic.com/mapspro/images/stock/962-wht-diamond-blank.png'
@@ -200,113 +165,5 @@ function parsePointFeature(
     return ['trainStation', true]
   } else {
     return ['generalNote', true]
-  }
-}
-
-export function featureGroupLayerType(featureGroup: FeatureGroup): LayerType {
-  if (pointGroups.includes(featureGroup as any)) {
-    return 'point'
-  } else if (polygonGroups.includes(featureGroup as any)) {
-    return 'polygon'
-  } else {
-    return 'line'
-  }
-}
-
-export function featureGroupSingularDisplayName(layer: FeatureGroup): string {
-  switch (layer) {
-    case 'bikePath':
-      return 'שביל'
-    case 'recommendedRoad':
-      return 'מסלול חלופי'
-    case 'dangerousRoad':
-      return 'כביש מסוכן'
-    case 'ofney dan':
-      return 'אופנידן'
-    case 'planned':
-      return 'שביל מתוכנן'
-    case 'inProgress':
-      return 'שביל בביצוע'
-    case 'missing':
-      return 'שביל חסר'
-    case 'dirtRoad':
-      return 'דרך עפר'
-    case 'dirtPath':
-      return 'שביל עפר'
-    case 'bridge':
-      return 'גשר'
-    case 'unknown':
-      return '???'
-    case 'mistake':
-      return 'טעות'
-    case 'unknownPolygon':
-      return 'שטח כלשהו'
-    case 'trainStationIsochrone':
-      return 'איזוכרון תחנת רכבת'
-    case 'coveredArea':
-      return 'שטח מכוסה'
-    case 'hill':
-      return 'גבעה'
-    case 'calmedTrafficArea':
-      return 'איזור מיתון תנועה'
-    case 'junction':
-      return 'צומת'
-    case 'calmedJunction':
-      return 'צומת עם מיתון תנועה'
-    case 'blockedPath':
-      return 'דרך חסומה'
-    case 'trainStation':
-      return 'תחנת רכבת'
-    case 'generalNote':
-      return 'הערה כללית'
-  }
-}
-
-export function featureGroupPluralDisplayName(layer: FeatureGroup): string {
-  switch (layer) {
-    case 'bikePath':
-      return 'שבילי אופניים'
-    case 'recommendedRoad':
-      return 'מסלולים חלופיים'
-    case 'dangerousRoad':
-      return 'כבישים מסוכנים'
-    case 'ofney dan':
-      return 'אופנידן'
-    case 'planned':
-      return 'שבילים מתוכננים'
-    case 'inProgress':
-      return 'שבילים בביצוע'
-    case 'missing':
-      return 'שבילים חסרים'
-    case 'dirtRoad':
-      return 'דרכי עפר'
-    case 'dirtPath':
-      return 'שבילי עפר'
-    case 'bridge':
-      return 'גשרים'
-    case 'unknown':
-      return '???'
-    case 'mistake':
-      return 'טעויות'
-    case 'unknownPolygon':
-      return 'שטחים כלשהם'
-    case 'trainStationIsochrone':
-      return 'איזוכרוני תחנת רכבת'
-    case 'coveredArea':
-      return 'שטחים מכוסים'
-    case 'hill':
-      return 'גבעות'
-    case 'calmedTrafficArea':
-      return 'איזורי מיתון תנועה'
-    case 'junction':
-      return 'צמתים'
-    case 'calmedJunction':
-      return 'צמתים עם מיתון תנועה'
-    case 'blockedPath':
-      return 'דרכים חסומות'
-    case 'trainStation':
-      return 'תחנות רכבת'
-    case 'generalNote':
-      return 'הערות כלליות'
   }
 }

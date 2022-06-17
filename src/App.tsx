@@ -1,7 +1,7 @@
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { useCallback, useState } from 'react'
-import { MdMyLocation } from 'react-icons/md'
+import { MdClose, MdMyLocation } from 'react-icons/md'
 import Map, {
   AttributionControl,
   GeolocateControl,
@@ -13,10 +13,10 @@ import { useLocalStorage, useMediaQuery, useTernaryDarkMode } from 'usehooks-ts'
 import About from './About'
 import ButtonBar from './ButtonBar'
 import { env } from './env'
+import { FeatureGroup } from './featureGroups'
+import FeatureGroupSelection from './FeatureGroupSelection'
 import { FeatureTooltip } from './FeatureTooltip'
 import Layers, { interactiveLayerIds } from './Layers'
-import { LayerToggles } from './LayerToggles'
-import { FeatureGroup } from './myMapsMapData'
 import { Panel } from './Panel'
 import Settings from './Settings'
 import { useRoute } from './useRoute'
@@ -31,7 +31,7 @@ function App() {
   )
   const [isDebugging, setIsDebugging] = useState(false)
   const [visibleGroups, setVisibleGroups] = useLocalStorage<
-    Partial<Record<FeatureGroup | 'osmBikePath', true>>
+    Partial<Record<FeatureGroup, true>>
   >('visibleGroups', {
     osmBikePath: true,
     recommendedRoad: true,
@@ -178,14 +178,31 @@ function App() {
             <MdMyLocation size={20} color={'var(--text-color)'} />
           </Marker>
         )}
-        <LayerToggles
+
+        <Panel
           isOpen={currentlyOpenPanel === 'layers'}
-          setIsOpen={(isOpen) =>
-            setCurrentlyOpenPanel(isOpen ? 'layers' : null)
-          }
-          visibleLayers={visibleGroups}
-          setVisibleLayers={setVisibleGroups}
-        />
+          style={{
+            top: '10px',
+            left: '10px',
+            maxHeight: 'calc(100% - 40px)',
+            maxWidth: 'calc(100% - 40px)',
+          }}
+        >
+          <button
+            onClick={() =>
+              setCurrentlyOpenPanel(
+                currentlyOpenPanel === 'layers' ? null : 'layers',
+              )
+            }
+          >
+            <MdClose />
+          </button>
+          <FeatureGroupSelection
+            isDebugging={isDebugging}
+            visibleLayers={visibleGroups}
+            setVisibleLayers={setVisibleGroups}
+          />
+        </Panel>
         <Panel
           isOpen={currentlyOpenPanel === 'settings'}
           style={{
