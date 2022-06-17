@@ -17,16 +17,18 @@ import { FeatureTooltip } from './FeatureTooltip'
 import Layers, { interactiveLayerIds } from './Layers'
 import { LayerToggles } from './LayerToggles'
 import { FeatureGroup } from './myMapsMapData'
-import { Pane } from './Pane'
+import { Panel } from './Panel'
 import Settings from './Settings'
 import { useRoute } from './useRoute'
 
 export type Mode = 'browse' | 'constructRoute' | 'viewRoute'
-export type Pane = 'layers' | 'settings' | 'about'
+export type Panel = 'layers' | 'settings' | 'about'
 
 function App() {
   const canHover = useMediaQuery('(any-hover: hover)')
-  const [currentlyOpenPane, setCurrentlyOpenPane] = useState<Pane | null>(null)
+  const [currentlyOpenPanel, setCurrentlyOpenPanel] = useState<Panel | null>(
+    null,
+  )
   const [isDebugging, setIsDebugging] = useState(false)
   const [visibleGroups, setVisibleGroups] = useLocalStorage<
     Partial<Record<FeatureGroup | 'osmBikePath', true>>
@@ -178,13 +180,15 @@ function App() {
           </Marker>
         )}
         <LayerToggles
-          isOpen={currentlyOpenPane === 'layers'}
-          setIsOpen={(isOpen) => setCurrentlyOpenPane(isOpen ? 'layers' : null)}
+          isOpen={currentlyOpenPanel === 'layers'}
+          setIsOpen={(isOpen) =>
+            setCurrentlyOpenPanel(isOpen ? 'layers' : null)
+          }
           visibleLayers={visibleGroups}
           setVisibleLayers={setVisibleGroups}
         />
-        <Pane
-          isOpen={currentlyOpenPane === 'settings'}
+        <Panel
+          isOpen={currentlyOpenPanel === 'settings'}
           style={{
             bottom: '10px',
             left: '10px',
@@ -193,9 +197,9 @@ function App() {
           }}
         >
           <Settings isDebugging={isDebugging} setIsDebugging={setIsDebugging} />
-        </Pane>
-        <Pane
-          isOpen={currentlyOpenPane === 'about'}
+        </Panel>
+        <Panel
+          isOpen={currentlyOpenPanel === 'about'}
           style={{
             top: '10px',
             left: '10px',
@@ -204,16 +208,16 @@ function App() {
           }}
         >
           <About />
-        </Pane>
-        {tooltipFeature && !currentlyOpenPane && (
+        </Panel>
+        {tooltipFeature && !currentlyOpenPanel && (
           <FeatureTooltipComponent feature={tooltipFeature} />
         )}
       </Map>
       <ButtonBar
         mode={mode}
         setMode={setMode}
-        currentlyOpenPane={currentlyOpenPane}
-        setCurrentlyOpenPane={setCurrentlyOpenPane}
+        currentlyOpenPanel={currentlyOpenPanel}
+        setCurrentlyOpenPanel={setCurrentlyOpenPanel}
         route={route}
       />
     </div>

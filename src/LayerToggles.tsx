@@ -4,7 +4,7 @@ import {
   featureGroupPluralDisplayName,
   featureGroups,
 } from './myMapsMapData'
-import { Pane } from './Pane'
+import { Panel } from './Panel'
 import { toggleSetRecordMember } from './utils'
 
 export function LayerToggles({
@@ -21,7 +21,7 @@ export function LayerToggles({
   ) => void
 }) {
   return (
-    <Pane
+    <Panel
       isOpen={isOpen}
       style={{
         top: '10px',
@@ -56,6 +56,6 @@ export function LayerToggles({
           </label>
         </div>
       ))}
-    </Pane>
+    </Panel>
   )
 }

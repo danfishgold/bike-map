@@ -12,21 +12,21 @@ import {
   MdSettings,
 } from 'react-icons/md'
 import { TbRoute } from 'react-icons/tb'
-import { Mode, Pane } from './App'
+import { Mode, Panel } from './App'
 import { Route } from './useRoute'
 
 type Props = {
   mode: Mode
   setMode: (mode: Mode) => void
-  currentlyOpenPane: Pane | null
-  setCurrentlyOpenPane: (pane: Pane | null) => void
+  currentlyOpenPanel: Panel | null
+  setCurrentlyOpenPanel: (pane: Panel | null) => void
   route: Route
 }
 export default function ButtonBar({
   mode,
   setMode,
-  currentlyOpenPane,
-  setCurrentlyOpenPane,
+  currentlyOpenPanel,
+  setCurrentlyOpenPanel,
   route,
 }: Props) {
   return (
@@ -40,8 +40,8 @@ export default function ButtonBar({
             icon={MdLayers}
             color='var(--blue-1)'
             onClick={() =>
-              setCurrentlyOpenPane(
-                currentlyOpenPane === 'layers' ? null : 'layers',
+              setCurrentlyOpenPanel(
+                currentlyOpenPanel === 'layers' ? null : 'layers',
               )
             }
           />
@@ -56,8 +56,8 @@ export default function ButtonBar({
             icon={MdSettings}
             color='var(--blue-3)'
             onClick={() =>
-              setCurrentlyOpenPane(
-                currentlyOpenPane === 'settings' ? null : 'settings',
+              setCurrentlyOpenPanel(
+                currentlyOpenPanel === 'settings' ? null : 'settings',
               )
             }
           />
@@ -66,8 +66,8 @@ export default function ButtonBar({
             icon={MdInfoOutline}
             color='var(--blue-4)'
             onClick={() =>
-              setCurrentlyOpenPane(
-                currentlyOpenPane === 'about' ? null : 'about',
+              setCurrentlyOpenPanel(
+                currentlyOpenPanel === 'about' ? null : 'about',
               )
             }
           />

@@ -1,6 +1,6 @@
 import { PropsWithChildren } from 'react'
 
-export function Pane({
+export function Panel({
   isOpen,
   style,
   children,

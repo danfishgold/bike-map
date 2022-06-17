@@ -1,5 +1,5 @@
 import { featureGroupSingularDisplayName } from './myMapsMapData'
-import { Pane } from './Pane'
+import { Panel } from './Panel'
 import { rgbValuesForColor, textColor } from './utils'
 
 export function FeatureTooltip({
@@ -19,7 +19,7 @@ export function FeatureTooltip({
   const description = hebrewDescription || englishDescription
 
   return (
-    <Pane
+    <Panel
       isOpen
       style={{
         top: '10px',
@@ -31,7 +31,7 @@ export function FeatureTooltip({
         {title} <FeatureTag feature={feature} />
       </h3>
       {description && <p style={{ margin: '0' }}>{description}</p>}
-    </Pane>
+    </Panel>
   )
 }
 
@@ -82,7 +82,7 @@ function DebugFeatureTooltip({
     (key) => !keysToShow.includes(key),
   )
   return (
-    <Pane
+    <Panel
       isOpen
       style={{
         top: '10px',
@@ -102,7 +102,7 @@ function DebugFeatureTooltip({
         {otherKeys.length > 0 && <li>{otherKeys.join(', ')}</li>}
       </ul>
       <button onClick={() => console.log({ feature })}>לוג</button>
-    </Pane>
+    </Panel>
   )
 }
 
