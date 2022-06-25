@@ -1,14 +1,13 @@
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { useTernaryDarkMode } from 'usehooks-ts'
+import { useLocalStorage, useTernaryDarkMode } from 'usehooks-ts'
 import darkMode from './assets/darkMode.png'
 import lightMode from './assets/lightMode.png'
 
-type Props = {
-  isDebugging: boolean
-  setIsDebugging: (isDebugging: boolean) => void
-}
+export default function Settings() {
+  const [isDebugging, setIsDebugging] = useLocalStorage('isDebugging', false)
+  const [shouldShowMapControlButtons, setShouldShowMapControlButtons] =
+    useLocalStorage('showMapControlButtons', true)
 
-export default function Settings({ isDebugging, setIsDebugging }: Props) {
   return (
     <>
       <h2>הגדרות</h2>
@@ -32,6 +31,19 @@ export default function Settings({ isDebugging, setIsDebugging }: Props) {
         />
         <label htmlFor='settings__is-debugging-checkbox'>
           מצב דיבוג (אם אתם לא דן אז לא כדאי)
+        </label>
+      </div>
+      <div>
+        <input
+          type='checkbox'
+          checked={shouldShowMapControlButtons}
+          onChange={(event) =>
+            setShouldShowMapControlButtons(event.target.checked)
+          }
+          id='settings__show-zoom-controls-checkbox'
+        />
+        <label htmlFor='settings__show-zoom-controls-checkbox'>
+          להציג כפתורי זום + צפון בפינת המפה
         </label>
       </div>
       <button

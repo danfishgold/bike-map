@@ -1,7 +1,7 @@
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { useCallback, useState } from 'react'
-import { MdClose, MdMyLocation } from 'react-icons/md'
+import { MdMyLocation } from 'react-icons/md'
 import Map, {
   AttributionControl,
   GeolocateControl,
@@ -9,7 +9,12 @@ import Map, {
   NavigationControl,
   ScaleControl,
 } from 'react-map-gl'
-import { useLocalStorage, useMediaQuery, useTernaryDarkMode } from 'usehooks-ts'
+import {
+  useLocalStorage,
+  useMediaQuery,
+  useReadLocalStorage,
+  useTernaryDarkMode,
+} from 'usehooks-ts'
 import About from './About'
 import ButtonBar from './ButtonBar'
 import { env } from './env'
@@ -29,7 +34,9 @@ function App() {
   const [currentlyOpenPanel, setCurrentlyOpenPanel] = useState<Panel | null>(
     null,
   )
-  const [isDebugging, setIsDebugging] = useState(false)
+  const isDebugging = useReadLocalStorage<boolean>('isDebugging') ?? false
+  const shouldShowMapControlButtons =
+    useReadLocalStorage<boolean>('showMapControlButtons') ?? true
   const [visibleGroups, setVisibleGroups] = useLocalStorage<
     Partial<Record<FeatureGroup, true>>
   >('visibleGroups', {
@@ -158,7 +165,11 @@ function App() {
           setFirstSymbolLayer(firstSymbolId)
         }}
       >
-        <ScaleControl />
+        {shouldShowMapControlButtons && (
+          <>
+            <ScaleControl />
+          </>
+        )}
         <NavigationControl />
         <GeolocateControl />
         <AttributionControl
@@ -179,8 +190,11 @@ function App() {
           </Marker>
         )}
 
+        {tooltipFeature && <FeatureTooltipComponent feature={tooltipFeature} />}
+
         <Panel
           isOpen={currentlyOpenPanel === 'layers'}
+          close={() => setCurrentlyOpenPanel(null)}
           style={{
             top: '10px',
             left: '10px',
@@ -188,23 +202,14 @@ function App() {
             maxWidth: 'calc(100% - 40px)',
           }}
         >
-          <button
-            onClick={() =>
-              setCurrentlyOpenPanel(
-                currentlyOpenPanel === 'layers' ? null : 'layers',
-              )
-            }
-          >
-            <MdClose />
-          </button>
           <FeatureGroupSelection
-            isDebugging={isDebugging}
             visibleLayers={visibleGroups}
             setVisibleLayers={setVisibleGroups}
           />
         </Panel>
         <Panel
           isOpen={currentlyOpenPanel === 'settings'}
+          close={() => setCurrentlyOpenPanel(null)}
           style={{
             bottom: '10px',
             left: '10px',
@@ -212,10 +217,11 @@ function App() {
             maxHeight: 'calc(100% - 40px)',
           }}
         >
-          <Settings isDebugging={isDebugging} setIsDebugging={setIsDebugging} />
+          <Settings />
         </Panel>
         <Panel
           isOpen={currentlyOpenPanel === 'about'}
+          close={() => setCurrentlyOpenPanel(null)}
           style={{
             top: '10px',
             left: '10px',
@@ -225,9 +231,6 @@ function App() {
         >
           <About />
         </Panel>
-        {tooltipFeature && !currentlyOpenPanel && (
-          <FeatureTooltipComponent feature={tooltipFeature} />
-        )}
       </Map>
       <ButtonBar
         mode={mode}

@@ -16,7 +16,8 @@ export function FeatureTooltip({
   if (!title) {
     return null
   }
-  const description = hebrewDescription || englishDescription
+  const description =
+    hebrewDescription || englishDescription.replace(/^תיאור: <br>סוג: $/, '')
 
   return (
     <Panel

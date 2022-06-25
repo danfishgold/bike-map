@@ -2,6 +2,7 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import { IconType } from 'react-icons'
 import {
   MdArrowBack,
+  MdClose,
   MdDone,
   MdEdit,
   MdInfoOutline,
@@ -12,6 +13,7 @@ import {
   MdSettings,
 } from 'react-icons/md'
 import { TbRoute } from 'react-icons/tb'
+import { useReadLocalStorage } from 'usehooks-ts'
 import { Mode, Panel } from './App'
 import { Route } from './useRoute'
 
@@ -29,6 +31,7 @@ export default function ButtonBar({
   setCurrentlyOpenPanel,
   route,
 }: Props) {
+  const isDebugging = useReadLocalStorage('isDebugging') ?? false
   return (
     <div
       style={{ display: 'flex', flexDirection: 'row', alignItems: 'stretch' }}
@@ -36,8 +39,8 @@ export default function ButtonBar({
       {mode === 'browse' ? (
         <>
           <ButtonBar.Button
-            label='שכבות'
-            icon={MdLayers}
+            label={currentlyOpenPanel === 'layers' ? 'סגירה' : 'שכבות'}
+            icon={currentlyOpenPanel === 'layers' ? MdClose : MdLayers}
             color='var(--blue-1)'
             onClick={() =>
               setCurrentlyOpenPanel(
@@ -45,16 +48,18 @@ export default function ButtonBar({
               )
             }
           />
+          {isDebugging && (
+            <ButtonBar.Button
+              label='תכנון מסלול'
+              icon={TbRoute}
+              color='var(--blue-2)'
+              onClick={() => setMode('constructRoute')}
+            />
+          )}
           <ButtonBar.Button
-            label='תכנון מסלול'
-            icon={TbRoute}
-            color='var(--blue-2)'
-            onClick={() => setMode('constructRoute')}
-          />
-          <ButtonBar.Button
-            label='הגדרות'
-            icon={MdSettings}
-            color='var(--blue-3)'
+            label={currentlyOpenPanel === 'settings' ? 'סגירה' : 'הגדרות'}
+            icon={currentlyOpenPanel === 'settings' ? MdClose : MdSettings}
+            color={isDebugging ? 'var(--blue-3)' : 'var(--blue-2)'}
             onClick={() =>
               setCurrentlyOpenPanel(
                 currentlyOpenPanel === 'settings' ? null : 'settings',
@@ -62,9 +67,9 @@ export default function ButtonBar({
             }
           />
           <ButtonBar.Button
-            label='אודות'
-            icon={MdInfoOutline}
-            color='var(--blue-4)'
+            label={currentlyOpenPanel === 'about' ? 'סגירה' : 'אודות'}
+            icon={currentlyOpenPanel === 'about' ? MdClose : MdInfoOutline}
+            color={isDebugging ? 'var(--blue-4)' : 'var(--blue-3)'}
             onClick={() =>
               setCurrentlyOpenPanel(
                 currentlyOpenPanel === 'about' ? null : 'about',

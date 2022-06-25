@@ -1,11 +1,14 @@
 import { PropsWithChildren } from 'react'
+import { MdClose } from 'react-icons/md'
 
 export function Panel({
   isOpen,
+  close,
   style,
   children,
 }: PropsWithChildren<{
   isOpen: boolean
+  close?: () => void
   style?: React.CSSProperties
 }>) {
   if (!isOpen) {
@@ -29,6 +32,11 @@ export function Panel({
         ...style,
       }}
     >
+      {close && (
+        <button onClick={close}>
+          <MdClose />
+        </button>
+      )}
       {children}
     </div>
   )

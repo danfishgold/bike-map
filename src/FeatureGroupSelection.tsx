@@ -1,4 +1,5 @@
 import { CSSProperties, PropsWithChildren } from 'react'
+import { useReadLocalStorage } from 'usehooks-ts'
 import {
   FeatureGroup,
   featureGroupDescription,
@@ -9,7 +10,6 @@ import GroupIcon from './GroupIcon'
 import { toggleSetRecordMember } from './utils'
 
 type Props = {
-  isDebugging: boolean
   visibleLayers: Partial<Record<FeatureGroup, true>>
   setVisibleLayers: (visibleLayers: Partial<Record<FeatureGroup, true>>) => void
 }
@@ -62,10 +62,10 @@ const debugOnlyGroups = myMapsFeatureGroups.filter(
 const debugSection: Section = { title: 'שכבות חבויות', groups: debugOnlyGroups }
 
 export default function FeatureGroupSelection({
-  isDebugging,
   visibleLayers,
   setVisibleLayers,
 }: Props) {
+  const isDebugging = useReadLocalStorage<boolean>('isDebugging')
   const sections = isDebugging
     ? [...nonDebugSections, debugSection]
     : nonDebugSections
