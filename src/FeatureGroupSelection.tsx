@@ -32,11 +32,11 @@ const recommendedGroups: FeatureGroup[] = [
   'bridge',
   'dirtPath',
   'hill',
-  'calmedTrafficArea',
 ]
 
 const otherGroups: FeatureGroup[] = [
   'dirtRoad',
+  'calmedTrafficArea',
   //  'trainStation'
 ]
 
@@ -119,7 +119,7 @@ function BikePathLayerToggles({
           type='radio'
           name='bike-path-layer'
           id='bike-path-layer--my-maps'
-          checked={visibleLayers['bikePath']}
+          checked={visibleLayers['bikePath'] ?? false}
           onChange={(event) =>
             setVisibleLayers(
               toggleSetRecordMember(
@@ -141,7 +141,7 @@ function BikePathLayerToggles({
           type='radio'
           name='bike-path-layer'
           id='bike-path-layer--osm'
-          checked={visibleLayers['osmBikePath']}
+          checked={visibleLayers['osmBikePath'] ?? false}
           onChange={(event) =>
             setVisibleLayers(
               toggleSetRecordMember(

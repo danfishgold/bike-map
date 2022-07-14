@@ -44,7 +44,6 @@ function App() {
     recommendedRoad: true,
     dangerousRoad: true,
     hill: true,
-    calmedTrafficArea: true,
     dirtPath: true,
   })
 
