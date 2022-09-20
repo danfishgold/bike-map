@@ -1,5 +1,4 @@
 import { FeatureCollection, Geometry } from 'geojson'
-import 'mapbox-gl/dist/mapbox-gl.css'
 import { useEffect, useState } from 'react'
 import { fetchMyMapsFeatures, MyMapsProperties } from './myMapsMapData'
 import { fetchOsmFeatures } from './osmMapData'

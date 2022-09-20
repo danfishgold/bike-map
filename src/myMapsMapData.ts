@@ -1,6 +1,5 @@
 import * as tj from '@tmcw/togeojson'
 import { Feature, FeatureCollection, Geometry } from 'geojson'
-import 'mapbox-gl/dist/mapbox-gl.css'
 import { customAlphabet } from 'nanoid'
 import { env } from './env'
 import {

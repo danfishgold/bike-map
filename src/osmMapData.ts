@@ -1,5 +1,4 @@
 import { FeatureCollection, Geometry } from 'geojson'
-import 'mapbox-gl/dist/mapbox-gl.css'
 import osmtogeojson from 'osmtogeojson'
 
 export async function fetchOsmFeatures(): Promise<FeatureCollection<Geometry>> {

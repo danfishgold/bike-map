@@ -1,4 +1,3 @@
-import 'mapbox-gl/dist/mapbox-gl.css'
 import { useLocalStorage, useTernaryDarkMode } from 'usehooks-ts'
 import darkMode from './assets/darkMode.png'
 import lightMode from './assets/lightMode.png'
