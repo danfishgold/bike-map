@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react'
+import { PropsWithChildren, useEffect, useRef } from 'react'
 import { MdClose } from 'react-icons/md'
 
 export function Panel({
@@ -11,6 +11,14 @@ export function Panel({
   close?: () => void
   style?: React.CSSProperties
 }>) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (isOpen) {
+      closeButtonRef.current?.focus()
+    }
+  }, [isOpen])
+
   if (!isOpen) {
     return null
   }
@@ -34,11 +42,11 @@ export function Panel({
     >
       {close && (
         <button
+          ref={closeButtonRef}
           onClick={close}
           style={{
             border: 'none',
             padding: '0',
-            outline: 'none',
             margin: '0',
             background: 'var(--blue-2)',
             borderRadius: '1000px',

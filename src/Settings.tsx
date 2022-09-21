@@ -63,7 +63,6 @@ function LightDarkModeToggleButton({
       onClick={onClick}
       style={{
         padding: 0,
-        outline: 0,
         border: 0,
         margin: 0,
         background: 'none',

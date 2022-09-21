@@ -40,7 +40,6 @@ export default function ButtonBar({
           <ButtonBar.Button
             label={currentlyOpenPanel === 'layers' ? 'סגירה' : 'שכבות'}
             icon={currentlyOpenPanel === 'layers' ? MdClose : MdLayers}
-            color='var(--blue-1)'
             onClick={() =>
               setCurrentlyOpenPanel(
                 currentlyOpenPanel === 'layers' ? null : 'layers',
@@ -51,14 +50,12 @@ export default function ButtonBar({
             <ButtonBar.Button
               label='תכנון מסלול'
               icon={TbRoute}
-              color='var(--blue-2)'
               onClick={() => setMode('constructRoute')}
             />
           )}
           <ButtonBar.Button
             label={currentlyOpenPanel === 'settings' ? 'סגירה' : 'הגדרות'}
             icon={currentlyOpenPanel === 'settings' ? MdClose : MdSettings}
-            color={isDebugging ? 'var(--blue-3)' : 'var(--blue-2)'}
             onClick={() =>
               setCurrentlyOpenPanel(
                 currentlyOpenPanel === 'settings' ? null : 'settings',
@@ -68,7 +65,6 @@ export default function ButtonBar({
           <ButtonBar.Button
             label={currentlyOpenPanel === 'about' ? 'סגירה' : 'אודות'}
             icon={currentlyOpenPanel === 'about' ? MdClose : MdInfoOutline}
-            color={isDebugging ? 'var(--blue-4)' : 'var(--blue-3)'}
             onClick={() =>
               setCurrentlyOpenPanel(
                 currentlyOpenPanel === 'about' ? null : 'about',
@@ -81,7 +77,6 @@ export default function ButtonBar({
           <ButtonBar.Button
             label='חזרה'
             icon={MdArrowBack}
-            color='var(--blue-1)'
             onClick={() => {
               route.clear()
               setMode('browse')
@@ -91,19 +86,16 @@ export default function ButtonBar({
             disabled={!route.canRemoveStop}
             label='הסרת עצירה'
             icon={MdOutlineWrongLocation}
-            color='var(--blue-2)'
             onClick={() => route.removeStop()}
           />
           <ButtonBar.Button
             label='הוספת עצירה'
             icon={MdOutlineAddLocationAlt}
-            color='var(--blue-3)'
             onClick={() => route.addStop()}
           />
           <ButtonBar.Button
             label='סיום'
             icon={MdDone}
-            color='var(--blue-4)'
             onClick={() => setMode('viewRoute')}
           />
         </>
@@ -112,7 +104,6 @@ export default function ButtonBar({
           <ButtonBar.Button
             label='חזרה'
             icon={MdArrowBack}
-            color='var(--blue-1)'
             onClick={() => {
               route.clear()
               setMode('browse')
@@ -121,19 +112,16 @@ export default function ButtonBar({
           <ButtonBar.Button
             label='עריכת המסלול'
             icon={MdEdit}
-            color='var(--blue-2)'
             onClick={() => setMode('constructRoute')}
           />
           <ButtonBar.Button
             label='מידע נוסף'
             icon={MdInfoOutline}
-            color='var(--blue-3)'
             onClick={() => alert('בסופו של דבר')}
           />
           <ButtonBar.Button
             label='שיתוף'
             icon={MdOutlineIosShare}
-            color='var(--blue-4)'
             onClick={() => alert('בסופו של דבר')}
           />
         </>
@@ -145,7 +133,6 @@ export default function ButtonBar({
 function ButtonBarButton({
   label,
   onClick,
-  color = 'azure',
   icon,
   disabled = false,
 }: {
@@ -156,21 +143,7 @@ function ButtonBarButton({
   disabled?: boolean
 }) {
   return (
-    <button
-      disabled={disabled}
-      style={{
-        flexGrow: 1,
-        padding: '10px 20px 5px',
-        margin: 0,
-        outline: 0,
-        border: 0,
-        background: color,
-        color: 'var(--text-color)',
-        fontSize: '0.8rem',
-        fontWeight: 700,
-      }}
-      onClick={onClick}
-    >
+    <button disabled={disabled} className='bar-button' onClick={onClick}>
       <div
         style={{
           opacity: disabled ? 0.4 : 1,
