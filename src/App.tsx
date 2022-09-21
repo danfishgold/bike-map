@@ -135,7 +135,6 @@ function App() {
                     interactiveLayerIds,
                   })
                 : null
-
             highlightFeature(newTooltipFeature, event.target)
           }
         }}
@@ -170,7 +169,13 @@ function App() {
           </>
         )}
         <NavigationControl />
-        <GeolocateControl />
+        <GeolocateControl
+          positionOptions={{
+            enableHighAccuracy: true,
+          }}
+          trackUserLocation={true}
+          showUserHeading={true}
+        />
         <AttributionControl
           customAttribution={['© המפה הציבורית לשבילי אופניים']}
         />
@@ -188,7 +193,6 @@ function App() {
             <MdMyLocation size={20} color={'var(--text-color)'} />
           </Marker>
         )}
-
         {tooltipFeature && <FeatureTooltipComponent feature={tooltipFeature} />}
 
         <Panel
