@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+  "name": "מפת שבילי אופניים בגוש דן",
+  "short_name": "מפת אופניים",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff",
+  "description": "ממשק נוח לטלפון למפה הציבורית לשבילי אופניים",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
