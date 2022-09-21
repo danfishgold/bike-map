@@ -4,8 +4,6 @@ import lightMode from './assets/lightMode.png'
 
 export default function Settings() {
   const [isDebugging, setIsDebugging] = useLocalStorage('isDebugging', false)
-  const [shouldShowMapControlButtons, setShouldShowMapControlButtons] =
-    useLocalStorage('showMapControlButtons', true)
 
   return (
     <>
@@ -13,7 +11,7 @@ export default function Settings() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'auto auto auto 1fr',
+          gridTemplateColumns: 'auto auto auto',
           gap: '20px',
         }}
       >
@@ -30,19 +28,6 @@ export default function Settings() {
         />
         <label htmlFor='settings__is-debugging-checkbox'>
           מצב דיבוג (אם אתם לא דן אז לא כדאי)
-        </label>
-      </div>
-      <div>
-        <input
-          type='checkbox'
-          checked={shouldShowMapControlButtons}
-          onChange={(event) =>
-            setShouldShowMapControlButtons(event.target.checked)
-          }
-          id='settings__show-zoom-controls-checkbox'
-        />
-        <label htmlFor='settings__show-zoom-controls-checkbox'>
-          להציג כפתורי זום + צפון בפינת המפה
         </label>
       </div>
       <button
@@ -105,10 +90,24 @@ function LightDarkModeToggleButton({
 function TernaryDarkModeImage({ mode }: { mode: 'dark' | 'light' | 'system' }) {
   switch (mode) {
     case 'light': {
-      return <img style={{ display: 'block', width: '80px' }} src={lightMode} />
+      return (
+        <img
+          width='80'
+          height='80'
+          style={{ display: 'block', width: '80px' }}
+          src={lightMode}
+        />
+      )
     }
     case 'dark': {
-      return <img style={{ display: 'block', width: '80px' }} src={darkMode} />
+      return (
+        <img
+          width='80'
+          height='80'
+          style={{ display: 'block', width: '80px' }}
+          src={darkMode}
+        />
+      )
     }
     case 'system': {
       return (
@@ -118,8 +117,15 @@ function TernaryDarkModeImage({ mode }: { mode: 'dark' | 'light' | 'system' }) {
             position: 'relative',
           }}
         >
-          <img style={{ display: 'block', width: '80px' }} src={lightMode} />
           <img
+            width='80'
+            height='80'
+            style={{ display: 'block', width: '80px' }}
+            src={lightMode}
+          />
+          <img
+            width='80'
+            height='80'
             style={{
               display: 'block',
               position: 'absolute',

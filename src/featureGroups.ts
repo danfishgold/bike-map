@@ -177,7 +177,7 @@ export function featureGroupDescription(
     case 'dirtRoad':
       return 'לא מומלץ לאופני כביש או עיר'
     case 'ofney dan':
-      return 'פרוייקט שאמור לקשר את תל אביב לשאר ערי גוש דן. אם הוא אי פעם יקרה.'
+      return 'פרוייקט שאמור לקשר את תל אביב לשאר ערי גוש דן'
     case 'calmedTrafficArea':
       return 'המהירות המותרת למכוניות היא עד 30 קמ״ש'
     default:

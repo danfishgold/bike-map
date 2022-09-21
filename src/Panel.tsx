@@ -33,8 +33,22 @@ export function Panel({
       }}
     >
       {close && (
-        <button onClick={close}>
-          <MdClose />
+        <button
+          onClick={close}
+          style={{
+            border: 'none',
+            padding: '0',
+            outline: 'none',
+            margin: '0',
+            background: 'var(--blue-2)',
+            borderRadius: '1000px',
+            width: '32px',
+            height: '32px',
+            display: 'grid',
+            placeItems: 'center',
+          }}
+        >
+          <MdClose size={16} />
         </button>
       )}
       {children}

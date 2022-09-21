@@ -61,8 +61,7 @@ function App() {
     undefined,
   )
   const route = useRoute(viewState, mode === 'constructRoute')
-  const { isDarkMode, ternaryDarkMode, setTernaryDarkMode } =
-    useTernaryDarkMode()
+  const { isDarkMode } = useTernaryDarkMode()
 
   const tooltipFeatureZoomThreshold = isDebugging ? 0 : 13
   const FeatureTooltipComponent = isDebugging
@@ -215,8 +214,8 @@ function App() {
           close={() => setCurrentlyOpenPanel(null)}
           style={{
             bottom: '10px',
-            left: '10px',
             right: '10px',
+            maxWidth: 'calc(100% - 42px)',
             maxHeight: 'calc(100% - 40px)',
           }}
         >
@@ -227,8 +226,9 @@ function App() {
           close={() => setCurrentlyOpenPanel(null)}
           style={{
             top: '10px',
-            left: '10px',
             right: '10px',
+            width: 'calc(100% - 42px)',
+            maxWidth: '500px',
             maxHeight: 'calc(100% - 40px)',
           }}
         >
