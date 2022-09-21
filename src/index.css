@@ -30,9 +30,11 @@ body {
   --blue-4: #7dd3fc;
   --blue-5: #38bdf8;
   --blue-6: #0ea5e9;
+  --blue-8: #0369a1;
   --panel-background: white;
   --panel-border: black;
   --text-color: black;
+  --link-color: var(--blue-8);
 }
 
 .app-container.dark {
@@ -42,9 +44,18 @@ body {
   --blue-4: #0284c7;
   --blue-5: #0ea5e9;
   --blue-6: #38bdf8;
+  --blue-9: #e0f2fe;
   --panel-background: #222;
   --panel-border: black;
   --text-color: white;
+  --link-color: var(--blue-6);
+}
+
+a,
+a:hover,
+a:active,
+a:visited {
+  color: var(--link-color);
 }
 
 #root {
