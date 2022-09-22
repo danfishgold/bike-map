@@ -49,6 +49,8 @@ function App() {
 
   const [tooltipFeature, setTooltipFeature] =
     useState<mapboxgl.MapboxGeoJSONFeature | null>(null)
+  const [isFollowingCurrentPosition, setIsFollowingCurrentPosition] =
+    useState(false)
 
   const [viewState, setViewState] = useState({
     longitude: 34.7804731,
@@ -64,6 +66,8 @@ function App() {
   const { isDarkMode } = useTernaryDarkMode()
 
   const tooltipFeatureZoomThreshold = isDebugging ? 0 : 13
+  const isBelowTooltipFeatureZoomThreshold =
+    viewState.zoom <= tooltipFeatureZoomThreshold
   const FeatureTooltipComponent = isDebugging
     ? FeatureTooltip.Debug
     : FeatureTooltip
@@ -93,14 +97,14 @@ function App() {
 
   const onMouseMove = useCallback(
     (event: mapboxgl.MapLayerMouseEvent) => {
-      if (viewState.zoom <= tooltipFeatureZoomThreshold) {
+      if (isBelowTooltipFeatureZoomThreshold) {
         return
       }
       const { features } = event
       const hoveredFeature = features && features[0]
       highlightFeature(hoveredFeature ?? null, event.target)
     },
-    [viewState.zoom, tooltipFeatureZoomThreshold, highlightFeature],
+    [isBelowTooltipFeatureZoomThreshold, highlightFeature],
   )
 
   const onMouseLeave = useCallback(
@@ -172,6 +176,8 @@ function App() {
         />
         <NavigationControl position={canHover ? 'top-right' : 'bottom-right'} />
         <GeolocateControl
+          onTrackUserLocationEnd={() => setIsFollowingCurrentPosition(false)}
+          onTrackUserLocationStart={() => setIsFollowingCurrentPosition(true)}
           position={canHover ? 'top-right' : 'bottom-right'}
           positionOptions={{
             enableHighAccuracy: true,
@@ -184,7 +190,7 @@ function App() {
           visibleGroups={visibleGroups}
           route={route}
         />
-        {!canHover && (
+        {!canHover && !isFollowingCurrentPosition && (
           <Marker
             latitude={viewState.latitude}
             longitude={viewState.longitude}
@@ -193,7 +199,11 @@ function App() {
             <MdMyLocation size={20} color={'var(--text-color)'} />
           </Marker>
         )}
-        {tooltipFeature && <FeatureTooltipComponent feature={tooltipFeature} />}
+        {tooltipFeature &&
+          !isBelowTooltipFeatureZoomThreshold &&
+          !(isFollowingCurrentPosition && !canHover) && (
+            <FeatureTooltipComponent feature={tooltipFeature} />
+          )}
 
         <Panel
           isOpen={currentlyOpenPanel === 'layers'}
