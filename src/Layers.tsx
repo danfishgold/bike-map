@@ -179,6 +179,7 @@ function MyMapsLayers({
 
       <Layer
         id={LayerId.MY_MAPS_LINES}
+        beforeId={firstSymbolLayer}
         type='line'
         filter={[
           'all',
