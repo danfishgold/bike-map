@@ -167,16 +167,17 @@ function App() {
             <ScaleControl />
           </>
         )}
-        <NavigationControl />
+        <AttributionControl
+          customAttribution={['© המפה הציבורית לשבילי אופניים']}
+        />
+        <NavigationControl position={canHover ? 'top-right' : 'bottom-right'} />
         <GeolocateControl
+          position={canHover ? 'top-right' : 'bottom-right'}
           positionOptions={{
             enableHighAccuracy: true,
           }}
           trackUserLocation={true}
           showUserHeading={true}
-        />
-        <AttributionControl
-          customAttribution={['© המפה הציבורית לשבילי אופניים']}
         />
         <Layers
           firstSymbolLayer={firstSymbolLayer}
