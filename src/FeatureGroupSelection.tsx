@@ -30,11 +30,11 @@ const recommendedGroups: FeatureGroup[] = [
   'recommendedRoad',
   'dangerousRoad',
   'bridge',
-  'dirtPath',
   'hill',
 ]
 
 const otherGroups: FeatureGroup[] = [
+  'dirtPath',
   'dirtRoad',
   'calmedTrafficArea',
   //  'trainStation'

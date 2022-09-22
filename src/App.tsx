@@ -40,7 +40,7 @@ function App() {
   const [visibleGroups, setVisibleGroups] = useLocalStorage<
     Partial<Record<FeatureGroup, true>>
   >('visibleGroups', {
-    osmBikePath: true,
+    bikePath: true,
     recommendedRoad: true,
     dangerousRoad: true,
     hill: true,
