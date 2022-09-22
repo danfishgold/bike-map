@@ -52,6 +52,7 @@ function FeatureTag({ feature }: { feature: mapboxgl.MapboxGeoJSONFeature }) {
         fontWeight: 'normal',
         padding: '2px 5px',
         borderRadius: '4px',
+        boxShadow: '0 0 1px rgba(0, 0, 0, 0.01)',
       }}
     >
       {featureGroupSingularDisplayName(featureGroup)}
