@@ -208,7 +208,10 @@ function App() {
           </Marker>
         )}
         {!shouldHideFeatureTooltip && (
-          <FeatureTooltipComponent feature={tooltipFeature} />
+          <FeatureTooltipComponent
+            feature={tooltipFeature}
+            canHover={canHover}
+          />
         )}
 
         <Panel

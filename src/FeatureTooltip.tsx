@@ -4,8 +4,10 @@ import { rgbValuesForColor, textColor } from './utils'
 
 export function FeatureTooltip({
   feature,
+  canHover,
 }: {
   feature: mapboxgl.MapboxGeoJSONFeature
+  canHover: boolean
 }) {
   const {
     name: title,
@@ -26,7 +28,7 @@ export function FeatureTooltip({
       isOpen
       style={{
         top: '10px',
-        right: '50px',
+        right: canHover ? '50px' : '10px',
         left: '10px',
       }}
     >
@@ -62,8 +64,10 @@ function FeatureTag({ feature }: { feature: mapboxgl.MapboxGeoJSONFeature }) {
 
 function DebugFeatureTooltip({
   feature,
+  canHover,
 }: {
   feature: mapboxgl.MapboxGeoJSONFeature
+  canHover: boolean
 }) {
   const properties = feature.properties ?? {}
   const keysToShow = [
@@ -90,7 +94,7 @@ function DebugFeatureTooltip({
       isOpen
       style={{
         top: '10px',
-        right: '50px',
+        right: canHover ? '50px' : '10px',
         left: '10px',
       }}
     >
