@@ -2,7 +2,10 @@ export default function About() {
   return (
     <>
       <h2>אודות</h2>
-      <p>האתר הזה נבנה על ידי דן פישגולד.</p>
+      <p>
+        האתר הזה נבנה על ידי{' '}
+        <a href='https://twitter.com/danfishgold'>דן פישגולד</a>.
+      </p>
       <p>
         המפה וחלק מהמידע שמוצג עליה מגיע מ{' '}
         <a href='https://openstreetmap.org'>Open Street Map</a> (ומ Mapbox).
