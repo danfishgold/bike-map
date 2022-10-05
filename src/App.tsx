@@ -115,6 +115,14 @@ function App() {
     [canHover, highlightFeature],
   )
 
+  const shouldHideCrosshairMarker =
+    canHover || isFollowingCurrentPosition || isBelowTooltipFeatureZoomThreshold
+
+  const shouldHideFeatureTooltip =
+    !tooltipFeature ||
+    isBelowTooltipFeatureZoomThreshold ||
+    (isFollowingCurrentPosition && !canHover)
+
   return (
     <div
       className={`app-container ${isDarkMode ? 'dark' : ''}`}
@@ -190,7 +198,7 @@ function App() {
           visibleGroups={visibleGroups}
           route={route}
         />
-        {!canHover && !isFollowingCurrentPosition && (
+        {!shouldHideCrosshairMarker && (
           <Marker
             latitude={viewState.latitude}
             longitude={viewState.longitude}
@@ -199,11 +207,9 @@ function App() {
             <MdMyLocation size={20} color={'var(--text-color)'} />
           </Marker>
         )}
-        {tooltipFeature &&
-          !isBelowTooltipFeatureZoomThreshold &&
-          !(isFollowingCurrentPosition && !canHover) && (
-            <FeatureTooltipComponent feature={tooltipFeature} />
-          )}
+        {!shouldHideFeatureTooltip && (
+          <FeatureTooltipComponent feature={tooltipFeature} />
+        )}
 
         <Panel
           isOpen={currentlyOpenPanel === 'layers'}
