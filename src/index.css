@@ -58,6 +58,12 @@ a:visited {
   color: var(--link-color);
 }
 
+.mapboxgl-ctrl,
+.bar-button {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 #root {
   display: flex;
   flex-direction: column;
