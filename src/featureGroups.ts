@@ -67,7 +67,7 @@ export function featureGroupSingularDisplayName(layer: FeatureGroup): string {
     case 'bikePath':
       return 'שביל אופניים'
     case 'recommendedRoad':
-      return 'מסלול חלופי'
+      return 'כביש סביר'
     case 'dangerousRoad':
       return 'כביש מסוכן'
     case 'ofney dan':

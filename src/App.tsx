@@ -44,7 +44,7 @@ function App() {
     recommendedRoad: true,
     dangerousRoad: true,
     hill: true,
-    dirtPath: true,
+    bridge: true,
   })
 
   const [tooltipFeature, setTooltipFeature] =
