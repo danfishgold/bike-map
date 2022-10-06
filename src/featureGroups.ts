@@ -118,7 +118,7 @@ export function featureGroupPluralDisplayName(layer: FeatureGroup): string {
     case 'bikePath':
       return 'שבילי אופניים (מפה ציבורית)'
     case 'recommendedRoad':
-      return 'מסלולים חלופיים'
+      return 'כבישים סבירים'
     case 'dangerousRoad':
       return 'כבישים מסוכנים'
     case 'ofney dan':
