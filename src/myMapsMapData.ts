@@ -39,14 +39,19 @@ export async function fetchMyMapsFeatures(): Promise<
   const xml = new DOMParser().parseFromString(xmlString, 'text/xml')
   const geoJson = tj.kml(xml)
 
-  if (geoJson.features.some((feature) => feature.geometry === null)) {
-    throw new Error('GeoJSON has null geometry')
-  }
+  const goodFeatures = geoJson.features.filter((feature) => {
+    if (feature.geometry === null) {
+      console.warn('Geojson has a feature with null geometry', feature)
+      return false
+    }
+    return true
+  })
 
-  const goodGeoJson = geoJson as FeatureCollection<
-    Geometry,
-    RawMyMapsProperties
-  >
+  const goodGeoJson = {
+    ...geoJson,
+    features: goodFeatures,
+  } as FeatureCollection<Geometry, RawMyMapsProperties>
+
 
   const featuresButWithIdsAndGroups = goodGeoJson.features.map((feature) => {
     const [featureGroup, highlightable] = parseFeature(feature)
